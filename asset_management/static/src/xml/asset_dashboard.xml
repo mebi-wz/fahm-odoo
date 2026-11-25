@@ -1,0 +1,357 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="asset_management.AssetDashboard">
+        <div class="o_asset_dashboard o_asset_dashboard_modern h-100 overflow-auto">
+            <t t-if="state.isLoading">
+                <div class="asset-loading-bar"/>
+            </t>
+
+            <!-- Portfolio hero -->
+            <section class="asset-hero mb-4">
+                <div class="asset-hero-orb asset-hero-orb-one"/>
+                <div class="asset-hero-orb asset-hero-orb-two"/>
+                <div class="asset-hero-content">
+                    <div class="asset-hero-copy">
+                        <span class="asset-eyebrow"><i class="fa fa-line-chart me-2"/>Asset command center</span>
+                        <h1>Know where every asset is—and what it is worth.</h1>
+                        <p>Live portfolio value, assignments, lifecycle status and approvals in one place.</p>
+                        <div class="asset-hero-actions">
+                            <button class="asset-btn asset-btn-light" t-on-click="viewAllAssets">
+                                <i class="fa fa-th-large"/> Explore assets
+                            </button>
+                            <button t-if="!state.isReadOnly" class="asset-btn asset-btn-primary" t-on-click="createAsset">
+                                <i class="fa fa-plus"/> Register asset
+                            </button>
+                            <button class="asset-icon-btn" title="Refresh dashboard" t-on-click="refreshDashboard">
+                                <i t-att-class="state.isLoading ? 'fa fa-refresh fa-spin' : 'fa fa-refresh'"/>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="asset-hero-metrics">
+                        <div class="asset-hero-metric">
+                            <span>Net book value</span>
+                            <strong t-esc="state.stats.total_value_fmt"/>
+                            <small>Original value <t t-esc="state.stats.original_value_fmt"/></small>
+                        </div>
+                        <div class="asset-coverage-card">
+                            <div class="asset-coverage-ring" t-attf-style="--coverage: {{state.stats.assignment_rate}}%;">
+                                <strong><t t-esc="state.stats.assignment_rate"/>%</strong>
+                            </div>
+                            <div>
+                                <span>Assignment coverage</span>
+                                <small><t t-esc="state.stats.employee_count + state.stats.warehouse_count"/> of <t t-esc="state.stats.total_count"/> assets located</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="asset-hero-footer">
+                    <span><i class="fa fa-clock-o me-2"/>Updated <t t-esc="state.lastUpdated || 'just now'"/></span>
+                    <span><i class="fa fa-shield me-2"/>Company-scoped, permission-aware data</span>
+                </div>
+            </section>
+
+            <!-- Stats Grid -->
+            <div class="asset-kpi-grid mb-4">
+                <!-- Total Assets Card -->
+                <div class="col">
+                    <div class="card border-0 rounded-4 bg-white h-100 p-3 hover-lift card-header-gradient-purple" t-on-click="viewAllAssets">
+                        <div class="d-flex align-items-center">
+                            <div class="stat-icon-wrapper rounded-4 bg-purple-light me-3">
+                                <i class="fa fa-cubes text-purple-custom fa-2x"/>
+                            </div>
+                            <div>
+                                <p class="text-muted small mb-1 fw-bold text-uppercase-tracking">Total Assets</p>
+                                <h3 class="text-value-lg mb-0" t-esc="state.stats.total_count"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Component Items Card -->
+                <div class="col">
+                    <div class="card border-0 rounded-4 bg-white h-100 p-3 hover-lift card-header-gradient-rose" t-on-click="viewComponentAssets">
+                        <div class="d-flex align-items-center">
+                            <div class="stat-icon-wrapper rounded-4 bg-danger-light me-3">
+                                <i class="fa fa-puzzle-piece text-danger-custom fa-2x"/>
+                            </div>
+                            <div>
+                                <p class="text-muted small mb-1 fw-bold text-uppercase-tracking">Component Items</p>
+                                <h3 class="text-value-lg mb-0" t-esc="state.stats.component_count"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Net Book Value Card -->
+                <div class="col">
+                    <div class="card border-0 rounded-4 bg-white h-100 p-3 card-header-gradient-green">
+                        <div class="d-flex align-items-center">
+                            <div class="stat-icon-wrapper rounded-4 bg-success-light me-3">
+                                <i class="fa fa-money text-success-custom fa-2x"/>
+                            </div>
+                            <div>
+                                <p class="text-muted small mb-1 fw-bold text-uppercase-tracking">Net Book Value</p>
+                                <h3 class="text-value-lg mb-0" t-esc="state.stats.total_value_fmt"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Warehouse Card -->
+                <div class="col">
+                    <div class="card border-0 rounded-4 bg-white h-100 p-3 hover-lift card-header-gradient-blue" t-on-click="viewWarehouseAssets">
+                        <div class="d-flex align-items-center">
+                            <div class="stat-icon-wrapper rounded-4 bg-info-light me-3">
+                                <i class="fa fa-building text-info-custom fa-2x"/>
+                            </div>
+                            <div>
+                                <p class="text-muted small mb-1 fw-bold text-uppercase-tracking">In Warehouse</p>
+                                <h3 class="text-value-lg mb-0" t-esc="state.stats.warehouse_count"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Employees Card -->
+                <div class="col">
+                    <div class="card border-0 rounded-4 bg-white h-100 p-3 hover-lift card-header-gradient-amber" t-on-click="viewEmployeeAssets">
+                        <div class="d-flex align-items-center">
+                            <div class="stat-icon-wrapper rounded-4 bg-warning-light me-3">
+                                <i class="fa fa-users text-warning-custom fa-2x"/>
+                            </div>
+                            <div>
+                                <p class="text-muted small mb-1 fw-bold text-uppercase-tracking">With Employees</p>
+                                <h3 class="text-value-lg mb-0" t-esc="state.stats.employee_count"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Unassigned Assets Card -->
+                <div class="col">
+                    <div class="card border-0 rounded-4 bg-white h-100 p-3 hover-lift card-header-gradient-rose" t-on-click="viewUnassignedAssets">
+                        <div class="d-flex align-items-center">
+                            <div class="stat-icon-wrapper rounded-4 bg-danger-light me-3">
+                                <i class="fa fa-exclamation-circle text-danger-custom fa-2x"/>
+                            </div>
+                            <div>
+                                <p class="text-muted small mb-1 fw-bold text-uppercase-tracking">Unassigned</p>
+                                <h3 class="text-value-lg mb-0" t-esc="state.stats.unassigned_count"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Vehicle Assets Card -->
+                <div class="col">
+                    <div class="card border-0 rounded-4 bg-white h-100 p-3 hover-lift card-header-gradient-purple" t-on-click="viewVehicles">
+                        <div class="d-flex align-items-center">
+                            <div class="stat-icon-wrapper rounded-4 bg-purple-light me-3">
+                                <i class="fa fa-car text-purple-custom fa-2x"/>
+                            </div>
+                            <div>
+                                <p class="text-muted small mb-1 fw-bold text-uppercase-tracking">Vehicle Assets</p>
+                                <h3 class="text-value-lg mb-0" t-esc="state.stats.vehicle_count"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Middle Section: Asset Status -->
+            <div class="row g-4 mb-4">
+                <!-- Operational Asset Status Breakdown -->
+                <div class="col-lg-12">
+                    <div class="card border-0 rounded-4 bg-white p-4 h-100 card-header-gradient-blue">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <div>
+                                <h5 class="fw-bold mb-1">Asset Operational Status</h5>
+                                <p class="text-muted small mb-0">Track assets by lifecycle stages (click cards to filter)</p>
+                            </div>
+                            <span class="badge bg-primary-light text-primary-custom px-3 py-2 rounded-pill font-weight-bold">Lifecycle</span>
+                        </div>
+                        <div class="row g-3">
+                            <!-- Draft Card -->
+                            <div class="col-md-4">
+                                <div class="mini-stat-card cursor-pointer" t-on-click="viewDraftAssets">
+                                    <div class="d-flex justify-content-center align-items-center mb-2">
+                                        <div class="rounded-circle bg-info-light p-2 me-2 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+                                            <i class="fa fa-pencil text-info-custom"/>
+                                        </div>
+                                        <span class="text-muted small fw-bold text-uppercase-tracking">Draft</span>
+                                    </div>
+                                    <h3 class="fw-bold mb-0 text-info-custom" t-esc="state.stats.draft_count"/>
+                                </div>
+                            </div>
+                            <!-- Running Card -->
+                            <div class="col-md-4">
+                                <div class="mini-stat-card cursor-pointer" t-on-click="viewRunningAssets">
+                                    <div class="d-flex justify-content-center align-items-center mb-2">
+                                        <div class="rounded-circle bg-success-light p-2 me-2 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+                                            <i class="fa fa-play-circle-o text-success-custom"/>
+                                        </div>
+                                        <span class="text-muted small fw-bold text-uppercase-tracking">Running</span>
+                                    </div>
+                                    <h3 class="fw-bold mb-0 text-success-custom" t-esc="state.stats.running_count"/>
+                                </div>
+                            </div>
+                            <!-- Closed Card -->
+                            <div class="col-md-4">
+                                <div class="mini-stat-card cursor-pointer" t-on-click="viewClosedAssets">
+                                    <div class="d-flex justify-content-center align-items-center mb-2">
+                                        <div class="rounded-circle bg-danger-light p-2 me-2 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+                                            <i class="fa fa-times-circle-o text-danger-custom"/>
+                                        </div>
+                                        <span class="text-muted small fw-bold text-uppercase-tracking">Closed</span>
+                                    </div>
+                                    <h3 class="fw-bold mb-0 text-danger-custom" t-esc="state.stats.closed_count"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent portfolio activity and action center -->
+            <div class="row g-4 mb-4">
+                <div class="col-xl-8">
+                    <div class="card asset-panel border-0 rounded-4 bg-white h-100">
+                        <div class="asset-panel-header">
+                            <div>
+                                <span class="asset-section-kicker">Portfolio</span>
+                                <h5>Recently registered assets</h5>
+                            </div>
+                            <button class="asset-text-btn" t-on-click="viewAllAssets">View all <i class="fa fa-arrow-right ms-1"/></button>
+                        </div>
+                        <div class="asset-recent-list" t-if="state.stats.recent_assets.length">
+                            <button t-foreach="state.stats.recent_assets" t-as="asset" t-key="asset.id"
+                                    class="asset-recent-row" t-att-data-asset-id="asset.id" t-on-click="openRecentAsset">
+                                <span class="asset-avatar"><i class="fa fa-cube"/></span>
+                                <span class="asset-recent-main">
+                                    <strong t-esc="asset.name"/>
+                                    <small><t t-esc="asset.tag_number"/> · <t t-esc="asset.category"/></small>
+                                </span>
+                                <span class="asset-recent-location">
+                                    <small t-esc="asset.location"/>
+                                    <span t-esc="asset.branch"/>
+                                </span>
+                                <span t-attf-class="asset-state asset-state-{{asset.state}}" t-esc="asset.state_label"/>
+                                <strong class="asset-recent-value" t-esc="asset.value_fmt"/>
+                                <i class="fa fa-angle-right asset-row-arrow"/>
+                            </button>
+                        </div>
+                        <div class="asset-empty-state" t-else="">
+                            <i class="fa fa-cubes"/>
+                            <strong>No assets registered yet</strong>
+                            <span>Register an asset to start building the portfolio.</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-xl-4">
+                    <div class="card asset-panel asset-action-panel border-0 rounded-4 bg-white h-100">
+                        <div class="asset-panel-header">
+                            <div>
+                                <span class="asset-section-kicker">Action center</span>
+                                <h5>Portfolio health</h5>
+                            </div>
+                            <span class="asset-health-dot" title="Live data"/>
+                        </div>
+                        <div class="asset-value-stack">
+                            <div>
+                                <span>Original asset value</span>
+                                <strong t-esc="state.stats.original_value_fmt"/>
+                            </div>
+                            <div>
+                                <span>Accumulated depreciation</span>
+                                <strong t-esc="state.stats.accumulated_depreciation_fmt"/>
+                            </div>
+                        </div>
+                        <div class="asset-approval-list" t-if="state.canManage">
+                            <button t-on-click="viewHandoverApprovals">
+                                <span class="asset-action-icon asset-action-icon-purple"><i class="fa fa-exchange"/></span>
+                                <span><strong>Handover approvals</strong><small>Waiting for review</small></span>
+                                <b t-esc="state.stats.pending_handover_count"/>
+                            </button>
+                            <button t-on-click="viewTemporaryApprovals">
+                                <span class="asset-action-icon asset-action-icon-blue"><i class="fa fa-clock-o"/></span>
+                                <span><strong>Store requests</strong><small>Temporary asset requests</small></span>
+                                <b t-esc="state.stats.pending_temporary_count"/>
+                            </button>
+                        </div>
+                        <div class="asset-quick-links">
+                            <button t-on-click="viewComponentAssets"><i class="fa fa-puzzle-piece"/> Components <b t-esc="state.stats.component_count"/></button>
+                            <button t-on-click="viewUnassignedAssets"><i class="fa fa-exclamation-triangle"/> Unassigned <b t-esc="state.stats.unassigned_count"/></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts & Lists Section -->
+            <div class="row g-4">
+                <!-- Assets by Category Card -->
+                <div class="col-lg-6">
+                    <div class="card border-0 rounded-4 bg-white p-4 h-100 card-header-gradient-purple">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <div>
+                                <h5 class="fw-bold mb-1">Assets by Category</h5>
+                                <p class="text-muted small mb-0">Total volume and value by category</p>
+                            </div>
+                            <i class="fa fa-pie-chart text-purple-custom fa-lg"/>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-borderless align-middle mb-0">
+                                <thead>
+                                    <tr class="text-muted small" style="border-bottom: 2px solid #f4f6fa;">
+                                        <th class="pb-3 fw-bold text-uppercase-tracking">CATEGORY</th>
+                                        <th class="pb-3 text-end fw-bold text-uppercase-tracking">COUNT</th>
+                                        <th class="pb-3 text-end fw-bold text-uppercase-tracking">NET VALUE</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="state.stats.category_data" t-as="cat" t-key="cat.id">
+                                        <tr class="table-custom-row cursor-pointer" t-att-data-category-id="cat.id" t-on-click="viewCategory">
+                                            <td class="py-3">
+                                                <div class="d-flex align-items-center">
+                                                    <div class="p-1 rounded-circle bg-primary-custom me-2" style="width: 8px; height: 8px;"/>
+                                                    <span class="fw-bold text-dark" t-esc="cat.name"/>
+                                                </div>
+                                            </td>
+                                            <td class="text-end py-3">
+                                                <span class="badge bg-purple-light text-purple-custom rounded-pill px-3 py-1 font-weight-bold" t-esc="cat.count"/>
+                                            </td>
+                                            <td class="text-end py-3 fw-bold text-dark" t-esc="cat.value_fmt"/>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Branch Distribution Card -->
+                <div class="col-lg-6">
+                    <div class="card border-0 rounded-4 bg-white p-4 h-100 card-header-gradient-blue">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <div>
+                                <h5 class="fw-bold mb-1">Branch Distribution</h5>
+                                <p class="text-muted small mb-0">Top branches by asset count percentage</p>
+                            </div>
+                            <i class="fa fa-map-marker text-info-custom fa-lg"/>
+                        </div>
+                        <div class="p-2" style="max-height: 380px; overflow-y: auto;">
+                            <t t-foreach="state.stats.branch_data" t-as="branch" t-key="branch.id">
+                                <div class="mb-4 progress-container">
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span class="fw-bold text-dark" t-esc="branch.name"/>
+                                        <span class="small text-muted fw-bold">
+                                            <t t-esc="branch.count"/> Assets (<t t-esc="branch.perc"/>%)
+                                        </span>
+                                    </div>
+                                    <div class="progress rounded-pill bg-light" style="height: 10px;">
+                                        <div class="progress-bar progress-bar-premium rounded-pill" t-attf-style="width: {{branch.perc}}%;"/>
+                                    </div>
+                                </div>
+                            </t>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </t>
+</templates>

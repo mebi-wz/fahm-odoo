@@ -1,0 +1,105 @@
+services:
+
+  odoo19:
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    image: fahm_odoo:19.0
+
+    container_name: dp_fahm_odoo19
+
+    depends_on:
+      - db19
+
+    ports:
+      - "127.0.0.1:8092:8069"
+      - "127.0.0.1:8093:8072"
+
+    volumes:
+      - dp_fahm_odoo19-web-data:/var/lib/odoo
+      - .:/mnt/fahm_spare_part:rw
+      - ./odoo.conf:/etc/odoo/odoo.conf:ro
+
+    environment:
+      HOST: db19
+      USER: odoo_fahm
+      PASSWORD: odoo_fahm
+
+    command:
+      - odoo
+      - --database=fahm_sp
+      - --db-filter=^fahm_sp$$
+      - --no-database-list
+
+    restart: unless-stopped
+
+    networks:
+      - fahm_odoo_network
+
+  odoo19_production:
+    image: fahm_odoo:19.0
+
+    container_name: dp_fahm_odoo19_production
+
+    depends_on:
+      - db19
+
+    # Keep this port bound to localhost. Access it through an SSH tunnel only.
+    ports:
+      - "127.0.0.1:8094:8069"
+      - "127.0.0.1:8095:8072"
+
+    # The shared Odoo data volume stores filestores under each database name,
+    # so fahm_sp and production remain separated inside the same volume.
+    volumes:
+      - dp_fahm_odoo19-web-data:/var/lib/odoo
+      - .:/mnt/fahm_spare_part:rw
+      - ./odoo.conf:/etc/odoo/odoo.conf:ro
+
+    environment:
+      HOST: db19
+      USER: odoo_fahm
+      PASSWORD: odoo_fahm
+
+    command:
+      - odoo
+      - --database=production
+      - --db-filter=^production$$
+      - --no-database-list
+      - --workers=1
+      - --max-cron-threads=1
+
+    restart: unless-stopped
+
+    networks:
+      - fahm_odoo_network
+
+  db19:
+    image: postgres:15
+
+    container_name: dp_fahm_odoo19_db
+
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_USER: odoo_fahm
+      POSTGRES_PASSWORD: odoo_fahm
+
+    volumes:
+      - dp_fahm_odoo19-db-data:/var/lib/postgresql/data
+
+    restart: unless-stopped
+
+    networks:
+      - fahm_odoo_network
+
+volumes:
+
+  dp_fahm_odoo19-web-data:
+
+  dp_fahm_odoo19-db-data:
+
+networks:
+
+  fahm_odoo_network:
+    driver: bridge
