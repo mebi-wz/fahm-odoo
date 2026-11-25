@@ -30,6 +30,8 @@ class FahmWaterQcCheck(models.Model):
         domain="[('product_id', '=', product_id)]",
     )
     source_id = fields.Many2one("fahm.water.source", string="Water Source", check_company=True)
+    treatment_id = fields.Many2one(
+        "fahm.water.treatment", string="Treatment Batch", check_company=True, index=True)
     sampling_point = fields.Char(
         help="Where the sample was taken, e.g. after RO, after ozonation, filler bowl."
     )

@@ -6,10 +6,29 @@
         <field name="inherit_id" ref="mrp.mrp_production_form_view"/>
         <field name="arch" type="xml">
             <xpath expr="//header/button[@name='action_confirm']" position="after">
+                <button name="action_fahm_request_materials" type="object" string="Request Materials"
+                        class="oe_highlight"
+                        invisible="fahm_step != 'materials'"/>
+                <button name="action_fahm_view_material_requests" type="object" string="Approve Materials"
+                        class="oe_highlight" groups="mrp.group_mrp_manager"
+                        invisible="fahm_step != 'approval'"/>
+                <button name="action_fahm_view_material_requests" type="object" string="Issue Materials"
+                        class="oe_highlight" groups="stock.group_stock_user"
+                        invisible="fahm_step != 'issue'"/>
+                <button name="action_fahm_load_stages" type="object" string="Load Stages"
+                        invisible="fahm_step != 'production' or fahm_stage_line_ids"/>
                 <button name="action_fahm_create_qc_check" type="object" string="Create QC Check"
-                        invisible="not fahm_qc_required or state in ('draft', 'done', 'cancel') or fahm_qc_state == 'passed'"/>
+                        class="oe_highlight"
+                        invisible="not fahm_qc_required or state in ('draft', 'done', 'cancel') or fahm_qc_state == 'passed' or fahm_step not in ('qc', False)"/>
             </xpath>
             <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_fahm_view_material_requests" type="object" class="oe_stat_button" icon="fa-dropbox"
+                        invisible="fahm_material_request_count == 0">
+                    <div class="o_field_widget o_stat_info">
+                        <span class="o_stat_value"><field name="fahm_material_request_count"/></span>
+                        <span class="o_stat_text">Material Requests</span>
+                    </div>
+                </button>
                 <button name="action_fahm_view_qc_checks" type="object" class="oe_stat_button" icon="fa-flask"
                         invisible="fahm_qc_check_count == 0">
                     <div class="o_field_widget o_stat_info">
@@ -19,6 +38,16 @@
                 </button>
             </xpath>
             <xpath expr="//sheet" position="before">
+                <div class="px-3 pt-2" invisible="not fahm_step">
+                    <field name="fahm_step" widget="statusbar"
+                           statusbar_visible="plan,materials,approval,issue,production,qc,close,done"/>
+                </div>
+                <div class="alert alert-info mb-0" role="alert" invisible="fahm_step not in ('materials', 'approval', 'issue')">
+                    <field name="fahm_material_state" invisible="1"/>
+                    <span invisible="fahm_step != 'materials'">Step 2: request the materials (treated water, preforms, caps, labels, film) from the store.</span>
+                    <span invisible="fahm_step != 'approval'">Step 3: waiting for the production manager to approve the material request.</span>
+                    <span invisible="fahm_step != 'issue'">Step 4: waiting for the store to issue the materials to the production floor.</span>
+                </div>
                 <div class="alert alert-warning mb-0" role="alert"
                      invisible="not fahm_qc_required or fahm_qc_state in ('passed', 'not_required') or state in ('draft', 'done', 'cancel')">
                     <field name="fahm_qc_state" invisible="1"/>
@@ -41,6 +70,35 @@
                 <field name="fahm_liters_produced" invisible="state != 'done' or not fahm_liters_produced"/>
                 <field name="fahm_reject_qty" invisible="not fahm_reject_qty"/>
             </xpath>
+            <xpath expr="//notebook/page[@name='components']" position="before">
+                <page string="Production Stages" name="fahm_stages" invisible="not fahm_water_type or state == 'draft'">
+                    <field name="fahm_stage_line_ids" readonly="state in ('done', 'cancel')">
+                        <list editable="bottom" create="0" delete="0"
+                              decoration-success="state == 'done'" decoration-info="state == 'progress'">
+                            <field name="sequence" column_invisible="1"/>
+                            <field name="name"/>
+                            <field name="state" widget="badge"
+                                   decoration-success="state == 'done'"
+                                   decoration-info="state == 'progress'"/>
+                            <field name="operator_id" widget="many2one_avatar_user" readonly="state == 'done'"/>
+                            <field name="qty_good" readonly="state == 'done'"/>
+                            <field name="qty_rejected" readonly="state == 'done'"/>
+                            <field name="unit_label"/>
+                            <field name="reject_reason_ids" widget="many2many_tags" optional="show" readonly="state == 'done'"/>
+                            <field name="date_start" optional="show"/>
+                            <field name="date_end" optional="hide"/>
+                            <field name="duration" widget="float_time" optional="show"/>
+                            <field name="note" optional="hide"/>
+                            <button name="action_start" type="object" string="Start" icon="fa-play"
+                                    class="btn-primary" invisible="state != 'waiting'"/>
+                            <button name="action_finish" type="object" string="Finish" icon="fa-check"
+                                    class="btn-success" invisible="state != 'progress'"/>
+                            <button name="action_reopen" type="object" string="Reopen" icon="fa-undo"
+                                    invisible="state != 'done'" groups="mrp.group_mrp_manager"/>
+                        </list>
+                    </field>
+                </page>
+            </xpath>
         </field>
     </record>
 
@@ -52,6 +110,9 @@
             <xpath expr="//field[@name='product_id']" position="after">
                 <field name="fahm_line_id" optional="show"/>
                 <field name="fahm_shift_id" optional="show"/>
+                <field name="fahm_material_state" widget="badge" optional="show"
+                       decoration-success="fahm_material_state == 'issued'"
+                       decoration-warning="fahm_material_state in ('submitted', 'approved', 'issuing')"/>
                 <field name="fahm_qc_state" widget="badge" optional="show"
                        decoration-success="fahm_qc_state == 'passed'"
                        decoration-danger="fahm_qc_state == 'failed'"

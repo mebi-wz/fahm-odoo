@@ -49,6 +49,12 @@ class ProductTemplate(models.Model):
             if product.fahm_units_per_pack < 0:
                 raise ValidationError(self.env._("Bottles per pack cannot be negative."))
 
+    def write(self, vals):
+        res = super().write(vals)
+        if vals.get("fahm_water_type") == "finished_water":
+            self.bom_ids._fahm_set_water_operation()
+        return res
+
     @api.onchange("fahm_water_type")
     def _onchange_fahm_water_type(self):
         if self.fahm_water_type == "finished_water":

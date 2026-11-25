@@ -40,4 +40,15 @@
         <field name="model_id" ref="model_fahm_water_production_report"/>
         <field name="domain_force">[('company_id', 'in', company_ids)]</field>
     </record>
+    <record id="rule_water_treatment_company" model="ir.rule">
+        <field name="name">Water treatment: multi-company</field>
+        <field name="model_id" ref="model_fahm_water_treatment"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+
+    <record id="rule_material_request_company" model="ir.rule">
+        <field name="name">Material request: multi-company</field>
+        <field name="model_id" ref="model_fahm_material_request"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
 </odoo>

@@ -12,3 +12,14 @@ access_qc_check_manager,qc.check.manager,model_fahm_water_qc_check,group_water_q
 access_qc_check_line_user,qc.check.line.user,model_fahm_water_qc_check_line,mrp.group_mrp_user,1,0,1,0
 access_qc_check_line_inspector,qc.check.line.inspector,model_fahm_water_qc_check_line,group_water_qc_inspector,1,1,1,1
 access_production_report_user,production.report.user,model_fahm_water_production_report,mrp.group_mrp_user,1,0,0,0
+access_water_treatment_user,water.treatment.user,model_fahm_water_treatment,mrp.group_mrp_user,1,1,1,0
+access_water_treatment_manager,water.treatment.manager,model_fahm_water_treatment,mrp.group_mrp_manager,1,1,1,1
+access_material_request_user,material.request.user,model_fahm_material_request,mrp.group_mrp_user,1,1,1,0
+access_material_request_manager,material.request.manager,model_fahm_material_request,mrp.group_mrp_manager,1,1,1,1
+access_material_request_stock,material.request.stock,model_fahm_material_request,stock.group_stock_user,1,1,0,0
+access_material_request_line_user,material.request.line.user,model_fahm_material_request_line,mrp.group_mrp_user,1,1,1,1
+access_material_request_line_stock,material.request.line.stock,model_fahm_material_request_line,stock.group_stock_user,1,0,0,0
+access_production_stage_user,production.stage.user,model_fahm_production_stage,mrp.group_mrp_user,1,0,0,0
+access_production_stage_manager,production.stage.manager,model_fahm_production_stage,mrp.group_mrp_manager,1,1,1,1
+access_production_stage_line_user,production.stage.line.user,model_fahm_production_stage_line,mrp.group_mrp_user,1,1,1,0
+access_production_stage_line_manager,production.stage.line.manager,model_fahm_production_stage_line,mrp.group_mrp_manager,1,1,1,1

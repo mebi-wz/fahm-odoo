@@ -33,6 +33,26 @@ Odoo's standard Manufacturing (MRP) app already covers bills of materials, manuf
 | Analysis | Production analysis (pivot/graph/list) by day, product, line and shift: planned vs produced quantity, litres, scrap and efficiency. | SQL view `fahm.water.production.report` |
 | Security | Production uses the standard Manufacturing groups (User / Administrator). A new **Water Quality Control** privilege has two levels: Inspector (records and evaluates checks) and Manager (configures parameters and reopens evaluated checks). Production users can create checks but cannot enter or evaluate results. | `res.groups` + access rules |
 
+### Phase 1b – step-by-step production (built)
+
+Each water production order now follows fixed steps, shown as a bar at the top of the order:
+
+| Step | Who | What happens in Odoo |
+|---|---|---|
+| 1. Plan | Production supervisor | Create the order (product, quantity, line, shift) and confirm it. |
+| 2. Request materials | Production supervisor | **Request Materials** creates a request pre-filled from the bill of materials (treated water, preforms, caps, labels, film). Quantities can be adjusted, then **Submit for Approval**. |
+| 3. Approval | Production manager | **Approve** or **Reject** the request (*Manufacturing → Requests to Approve*). |
+| 4. Store issue | Store keeper | **Issue Materials** creates the transfers to the *Production Floor*: packaging from the store, treated water from the *Treated Water Tank*. The store validates the transfer when the goods are handed over. |
+| 5. Production | Operators | The stages load automatically. Each stage is started and finished in order with good/rejected quantities: bottle line = Blow Moulding → Filling & Capping → Labelling & Coding → Packing; 20 L jar line = Washing & Sanitising → Filling & Capping → Labelling & Coding. The final stage sets the produced quantity. |
+| 6. Quality check | QC inspector | Finished-product QC check; must pass. |
+| 7. Close | Production supervisor | **Produce** consumes the issued materials and puts the finished packs in stock. |
+
+The order cannot start before the materials are issued, and it cannot be closed before all stages are finished and QC has passed.
+
+**Raw water / water treatment:** *Manufacturing → Water Treatment*. A treatment batch records the raw water meter readings (start/end), the treated water produced, the reject water and the recovery %. The treated water must pass a *Treated Water* QC check. Only then does **Move to Tank** put it into the *Treated Water Tank*, where production can request it.
+
+**Set-up created automatically per warehouse:** the *Treated Water Tank* and *Production Floor* locations, and the *Water Production* operation type. Bills of materials for finished water are linked to that operation type, so orders consume from the production floor.
+
 ### Phase 2 (next)
 
 - **20 L jar returns / deposits**: track jars issued to and returned by customers, deposit amounts and jar wash cycles.

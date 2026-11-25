@@ -9,9 +9,17 @@ class TestWaterManufacturing(TransactionCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        cls.stock_location = cls.env.ref("stock.stock_location_stock")
+        cls.warehouse = cls.env["stock.warehouse"].search(
+            [("company_id", "=", cls.env.company.id)], limit=1)
+        cls.warehouse._fahm_ensure_water_setup()
+        cls.stock_location = cls.warehouse.lot_stock_id
+        cls.litre = cls.env.ref("uom.product_uom_litre")
         cls.preform = cls.env["product.product"].create({
             "name": "Test Preform", "is_storable": True, "fahm_water_type": "preform",
+        })
+        cls.treated_water = cls.env["product.product"].create({
+            "name": "Test Treated Water", "is_storable": True, "uom_id": cls.litre.id,
+            "fahm_water_type": "treated_water", "fahm_volume_per_unit": 1,
         })
         cls.water = cls.env["product.product"].create({
             "name": "Test Water 0.5 L x 24",
@@ -24,13 +32,21 @@ class TestWaterManufacturing(TransactionCase):
         cls.bom = cls.env["mrp.bom"].create({
             "product_tmpl_id": cls.water.product_tmpl_id.id,
             "product_qty": 1,
-            "bom_line_ids": [Command.create({"product_id": cls.preform.id, "product_qty": 24})],
+            "bom_line_ids": [
+                Command.create({"product_id": cls.preform.id, "product_qty": 24}),
+                Command.create({"product_id": cls.treated_water.id, "product_qty": 12,
+                                "product_uom_id": cls.litre.id}),
+            ],
         })
         cls.env["stock.quant"]._update_available_quantity(cls.preform, cls.stock_location, 10000)
+        cls.env["stock.quant"]._update_available_quantity(
+            cls.treated_water, cls.warehouse.fahm_tank_location_id, 5000)
         cls.line = cls.env["mrp.workcenter"].create({
             "name": "Test Bottle Line", "fahm_is_water_line": True, "fahm_line_type": "bottle",
         })
+        cls.source = cls.env["fahm.water.source"].create({"name": "Test Borehole", "code": "TBH"})
 
+    # ------------------------------------------------------------------ helpers
     def _create_mo(self, qty=10):
         mo_form = Form(self.env["mrp.production"])
         mo_form.product_id = self.water
@@ -56,13 +72,46 @@ class TestWaterManufacturing(TransactionCase):
                     value = param.max_value
                 line.write({"value": value, "is_measured": True})
 
+    def _issue_materials(self, mo):
+        action = mo.action_fahm_request_materials()
+        request = self.env["fahm.material.request"].browse(action["res_id"])
+        request.action_submit()
+        request.action_approve()
+        request.action_issue()
+        for picking in request.picking_ids:
+            for move in picking.move_ids:
+                move.quantity = move.product_uom_qty
+            picking.move_ids.picked = True
+            picking.button_validate()
+        return request
+
+    def _run_stages(self, mo, packs):
+        mo._fahm_load_stages()
+        for line in mo.fahm_stage_line_ids:
+            line.action_start()
+            line.qty_good = packs if line.is_final else packs * 24
+            line.action_finish()
+
+    def _pass_qc(self, mo):
+        action = mo.action_fahm_create_qc_check()
+        check = self.env["fahm.water.qc.check"].browse(action["res_id"])
+        self._fill_check(check, passing=True)
+        check.action_evaluate()
+        return check
+
+    # ------------------------------------------------------------------ setup
+    def test_water_bom_uses_water_operation(self):
+        self.assertEqual(self.bom.picking_type_id, self.warehouse.fahm_production_type_id)
+        mo = self._create_mo()
+        self.assertEqual(mo.location_src_id, self.warehouse.fahm_floor_location_id)
+
+    # ------------------------------------------------------------------ QC
     def test_qc_check_loads_parameters_per_stage(self):
         check = self.env["fahm.water.qc.check"].create({
             "check_type": "finished_product", "product_id": self.water.id,
         })
-        params = check.line_ids.parameter_id
-        self.assertTrue(params)
-        self.assertTrue(all(p.stage_finished_product for p in params))
+        self.assertTrue(check.line_ids)
+        self.assertTrue(all(p.stage_finished_product for p in check.line_ids.parameter_id))
         self.assertTrue(check.name.startswith("WQC/"))
 
     def test_measurement_evaluation(self):
@@ -95,31 +144,119 @@ class TestWaterManufacturing(TransactionCase):
         with self.assertRaises(UserError):
             check.line_ids[0].value = 1
 
-    def test_mo_blocked_until_qc_passed(self):
-        mo = self._create_mo()
-        self.assertEqual(mo.fahm_qc_state, "pending")
-        mo.qty_producing = 10
-        with self.assertRaises(UserError):
-            mo.button_mark_done()
+    def test_parameter_limit_validation(self):
+        with self.assertRaises(ValidationError):
+            self.env["fahm.water.qc.parameter"].create({
+                "name": "Bad", "test_type": "measure",
+                "has_min": True, "min_value": 5, "has_max": True, "max_value": 1,
+            })
 
-        action = mo.action_fahm_create_qc_check()
-        check = self.env["fahm.water.qc.check"].browse(action["res_id"])
-        self.assertEqual(check.production_id, mo)
-        self.assertEqual(check.product_id, self.water)
-
-        self._fill_check(check, passing=False)
-        check.action_evaluate()
-        self.assertEqual(mo.fahm_qc_state, "failed")
-        with self.assertRaises(UserError):
-            mo.button_mark_done()
-
-        check2 = self.env["fahm.water.qc.check"].create({
-            "check_type": "finished_product", "production_id": mo.id,
+    # ------------------------------------------------------------------ treatment
+    def test_treatment_batch_to_tank_after_qc(self):
+        tank = self.warehouse.fahm_tank_location_id
+        before = self.treated_water.with_context(location=tank.id).qty_available
+        batch = self.env["fahm.water.treatment"].create({
+            "source_id": self.source.id,
+            "product_id": self.treated_water.id,
+            "warehouse_id": self.warehouse.id,
+            "meter_start": 1000, "meter_end": 3000, "treated_qty": 1500,
         })
-        self._fill_check(check2, passing=True)
-        check2.action_evaluate()
-        self.assertEqual(mo.fahm_qc_state, "passed")
+        self.assertEqual(batch.raw_water_qty, 2000)
+        self.assertEqual(batch.reject_qty, 500)
+        self.assertAlmostEqual(batch.recovery_rate, 75)
+        batch.action_submit_qc()
+        self.assertEqual(batch.state, "qc")
+        with self.assertRaises(UserError):
+            batch.action_done()
+        check = batch.qc_check_ids
+        self.assertEqual(check.check_type, "treated_water")
+        self._fill_check(check)
+        check.action_evaluate()
+        self.assertEqual(batch.qc_state, "passed")
+        batch.action_done()
+        self.assertEqual(batch.state, "done")
+        after = self.treated_water.with_context(location=tank.id).qty_available
+        self.assertAlmostEqual(after - before, 1500)
 
+    def test_treated_water_cannot_exceed_raw(self):
+        with self.assertRaises(ValidationError):
+            self.env["fahm.water.treatment"].create({
+                "source_id": self.source.id, "product_id": self.treated_water.id,
+                "meter_start": 0, "meter_end": 100, "treated_qty": 200,
+            })
+
+    # ------------------------------------------------------------------ material request
+    def test_material_request_flow(self):
+        mo = self._create_mo(qty=10)
+        self.assertEqual(mo.fahm_step, "materials")
+        with self.assertRaises(UserError):
+            mo.action_start()
+
+        action = mo.action_fahm_request_materials()
+        request = self.env["fahm.material.request"].browse(action["res_id"])
+        self.assertEqual(
+            {(l.product_id, l.qty_requested) for l in request.line_ids},
+            {(self.preform, 240), (self.treated_water, 120)},
+        )
+        request.action_submit()
+        self.assertEqual(mo.fahm_step, "approval")
+        request.action_approve()
+        self.assertEqual(mo.fahm_step, "issue")
+        request.action_issue()
+        self.assertEqual(request.state, "issuing")
+        # treated water comes from the tank, preforms from the store: two transfers
+        self.assertEqual(len(request.picking_ids), 2)
+        self.assertEqual(
+            set(request.picking_ids.location_id.ids),
+            {self.stock_location.id, self.warehouse.fahm_tank_location_id.id})
+        self.assertTrue(all(p.location_dest_id == self.warehouse.fahm_floor_location_id
+                            for p in request.picking_ids))
+        for picking in request.picking_ids:
+            picking.move_ids.picked = True
+            picking.button_validate()
+        self.assertEqual(request.state, "issued")
+        self.assertEqual(mo.fahm_material_state, "issued")
+        self.assertEqual(mo.fahm_step, "production")
+        self.assertEqual(mo.reservation_state, "assigned")
+        self.assertTrue(mo.fahm_stage_line_ids, "Stages are loaded once materials are issued")
+
+    def test_request_cannot_be_issued_before_approval(self):
+        mo = self._create_mo()
+        request = self.env["fahm.material.request"].browse(mo.action_fahm_request_materials()["res_id"])
+        request.action_submit()
+        with self.assertRaises(UserError):
+            request.action_issue()
+
+    # ------------------------------------------------------------------ stages and closing
+    def test_stages_are_sequential(self):
+        mo = self._create_mo()
+        self._issue_materials(mo)
+        first, second = mo.fahm_stage_line_ids[:2]
+        with self.assertRaises(UserError):
+            second.action_start()
+        first.action_start()
+        self.assertEqual(mo.state, "progress")
+        with self.assertRaises(UserError):
+            first.action_finish()  # no good quantity yet
+        first.qty_good = 240
+        first.action_finish()
+        second.action_start()
+        self.assertEqual(second.state, "progress")
+
+    def test_full_flow_to_done(self):
+        mo = self._create_mo(qty=10)
+        self._issue_materials(mo)
+        with self.assertRaises(UserError):
+            mo.button_mark_done()  # stages not finished
+
+        self._run_stages(mo, packs=10)
+        self.assertEqual(mo.qty_producing, 10)
+        self.assertEqual(mo.fahm_step, "qc")
+        with self.assertRaises(UserError):
+            mo.button_mark_done()  # QC not passed
+
+        self._pass_qc(mo)
+        self.assertEqual(mo.fahm_step, "close")
         mo.button_mark_done()
         self.assertEqual(mo.state, "done")
         self.assertAlmostEqual(mo.fahm_qty_produced, 10)
@@ -132,17 +269,13 @@ class TestWaterManufacturing(TransactionCase):
         self.assertEqual(report.line_id, self.line)
         self.assertAlmostEqual(report.efficiency, 100)
 
-    def test_mo_without_qc_requirement(self):
-        self.water.fahm_qc_required = False
+    def test_failed_qc_blocks_closing(self):
         mo = self._create_mo(qty=2)
-        self.assertEqual(mo.fahm_qc_state, "not_required")
-        mo.qty_producing = 2
-        mo.button_mark_done()
-        self.assertEqual(mo.state, "done")
-
-    def test_parameter_limit_validation(self):
-        with self.assertRaises(ValidationError):
-            self.env["fahm.water.qc.parameter"].create({
-                "name": "Bad", "test_type": "measure",
-                "has_min": True, "min_value": 5, "has_max": True, "max_value": 1,
-            })
+        self._issue_materials(mo)
+        self._run_stages(mo, packs=2)
+        check = self.env["fahm.water.qc.check"].browse(mo.action_fahm_create_qc_check()["res_id"])
+        self._fill_check(check, passing=False)
+        check.action_evaluate()
+        self.assertEqual(mo.fahm_qc_state, "failed")
+        with self.assertRaises(UserError):
+            mo.button_mark_done()

@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <!-- Small bottle (PET) line -->
+    <record id="stage_bottle_blow" model="fahm.production.stage">
+        <field name="name">Blow Moulding</field>
+        <field name="line_type">bottle</field>
+        <field name="sequence">10</field>
+        <field name="unit_label">bottles</field>
+        <field name="description">Heat preforms and blow them into bottles. Count good bottles and rejected bottles.</field>
+    </record>
+    <record id="stage_bottle_fill" model="fahm.production.stage">
+        <field name="name">Filling &amp; Capping</field>
+        <field name="line_type">bottle</field>
+        <field name="sequence">20</field>
+        <field name="unit_label">bottles</field>
+        <field name="description">Rinse, fill with treated water and cap. Check fill level and cap torque.</field>
+    </record>
+    <record id="stage_bottle_label" model="fahm.production.stage">
+        <field name="name">Labelling &amp; Coding</field>
+        <field name="line_type">bottle</field>
+        <field name="sequence">30</field>
+        <field name="unit_label">bottles</field>
+        <field name="description">Apply labels and print the batch number and best-before date.</field>
+    </record>
+    <record id="stage_bottle_pack" model="fahm.production.stage">
+        <field name="name">Packing / Shrink Wrapping</field>
+        <field name="line_type">bottle</field>
+        <field name="sequence">40</field>
+        <field name="unit_label">packs</field>
+        <field name="is_final" eval="True"/>
+        <field name="description">Group bottles into packs and shrink wrap. Count finished packs.</field>
+    </record>
+
+    <!-- 20 L jar line -->
+    <record id="stage_jar_wash" model="fahm.production.stage">
+        <field name="name">Washing &amp; Sanitising</field>
+        <field name="line_type">jar</field>
+        <field name="sequence">10</field>
+        <field name="unit_label">jars</field>
+        <field name="description">Inspect returned jars, wash and sanitise them. Reject damaged jars.</field>
+    </record>
+    <record id="stage_jar_fill" model="fahm.production.stage">
+        <field name="name">Filling &amp; Capping</field>
+        <field name="line_type">jar</field>
+        <field name="sequence">20</field>
+        <field name="unit_label">jars</field>
+        <field name="description">Fill jars with treated water and cap them.</field>
+    </record>
+    <record id="stage_jar_label" model="fahm.production.stage">
+        <field name="name">Labelling &amp; Coding</field>
+        <field name="line_type">jar</field>
+        <field name="sequence">30</field>
+        <field name="unit_label">jars</field>
+        <field name="is_final" eval="True"/>
+        <field name="description">Apply shrink seal and label, print batch number and best-before date.</field>
+    </record>
+</odoo>

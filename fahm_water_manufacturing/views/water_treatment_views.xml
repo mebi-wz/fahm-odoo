@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_fahm_water_treatment_list" model="ir.ui.view">
+        <field name="name">fahm.water.treatment.list</field>
+        <field name="model">fahm.water.treatment</field>
+        <field name="arch" type="xml">
+            <list decoration-muted="state == 'cancel'">
+                <field name="name"/>
+                <field name="date"/>
+                <field name="source_id"/>
+                <field name="raw_water_qty" sum="Total"/>
+                <field name="treated_qty" sum="Total"/>
+                <field name="reject_qty" sum="Total" optional="show"/>
+                <field name="recovery_rate" avg="Average" optional="show"/>
+                <field name="operator_id" widget="many2one_avatar_user" optional="show"/>
+                <field name="qc_state" widget="badge"
+                       decoration-success="qc_state == 'passed'"
+                       decoration-danger="qc_state == 'failed'"
+                       decoration-warning="qc_state == 'pending'"/>
+                <field name="state" widget="badge"
+                       decoration-success="state == 'done'"
+                       decoration-info="state == 'qc'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_fahm_water_treatment_form" model="ir.ui.view">
+        <field name="name">fahm.water.treatment.form</field>
+        <field name="model">fahm.water.treatment</field>
+        <field name="arch" type="xml">
+            <form string="Water Treatment Batch">
+                <header>
+                    <button name="action_submit_qc" type="object" string="Send to QC" class="oe_highlight"
+                            invisible="state != 'draft'"/>
+                    <button name="action_open_qc" type="object" string="Open QC Check" class="oe_highlight"
+                            invisible="state != 'qc' or qc_state == 'passed'"/>
+                    <button name="action_done" type="object" string="Move to Tank" class="oe_highlight"
+                            invisible="state != 'qc' or qc_state != 'passed'"/>
+                    <button name="action_cancel" type="object" string="Cancel"
+                            invisible="state in ('done', 'cancel')"/>
+                    <button name="action_draft" type="object" string="Reset to Draft"
+                            invisible="state != 'cancel'"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,qc,done"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name" readonly="1"/></h1>
+                    </div>
+                    <group>
+                        <group string="Raw Water">
+                            <field name="source_id" readonly="state != 'draft'" options="{'no_create': True}"/>
+                            <field name="date" readonly="state != 'draft'"/>
+                            <field name="meter_start" readonly="state != 'draft'"/>
+                            <field name="meter_end" readonly="state != 'draft'"/>
+                            <field name="raw_water_qty"/>
+                        </group>
+                        <group string="Treated Water">
+                            <field name="product_id" readonly="state != 'draft'" options="{'no_create': True}"/>
+                            <field name="treated_qty" readonly="state != 'draft'"/>
+                            <field name="reject_qty"/>
+                            <field name="recovery_rate"/>
+                            <field name="warehouse_id" readonly="state != 'draft'" groups="stock.group_stock_multi_warehouses"/>
+                            <field name="operator_id" widget="many2one_avatar_user" readonly="state == 'done'"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="treatment_steps" readonly="state != 'draft'"/>
+                        <field name="qc_state" widget="badge"
+                               decoration-success="qc_state == 'passed'"
+                               decoration-danger="qc_state == 'failed'"
+                               decoration-warning="qc_state == 'pending'"/>
+                        <field name="move_id" invisible="not move_id"/>
+                        <field name="company_id" groups="base.group_multi_company" readonly="state != 'draft'"/>
+                    </group>
+                    <notebook>
+                        <page string="QC Checks" name="qc">
+                            <field name="qc_check_ids" readonly="1">
+                                <list>
+                                    <field name="name"/>
+                                    <field name="date"/>
+                                    <field name="inspector_id"/>
+                                    <field name="state" widget="badge"
+                                           decoration-success="state == 'passed'"
+                                           decoration-danger="state == 'failed'"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Notes" name="notes">
+                            <field name="note"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_fahm_water_treatment_search" model="ir.ui.view">
+        <field name="name">fahm.water.treatment.search</field>
+        <field name="model">fahm.water.treatment</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="source_id"/>
+                <filter string="Draft" name="draft" domain="[('state', '=', 'draft')]"/>
+                <filter string="Waiting QC" name="qc" domain="[('state', '=', 'qc')]"/>
+                <filter string="In Tank" name="done" domain="[('state', '=', 'done')]"/>
+                <separator/>
+                <filter string="Date" name="filter_date" date="date"/>
+                <group>
+                    <filter string="Water Source" name="groupby_source" context="{'group_by': 'source_id'}"/>
+                    <filter string="Day" name="groupby_day" context="{'group_by': 'date:day'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_fahm_water_treatment" model="ir.actions.act_window">
+        <field name="name">Water Treatment</field>
+        <field name="res_model">fahm.water.treatment</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Record a water treatment run</p>
+            <p>Enter the raw water meter readings and the treated water produced. After the
+               treated water passes QC, it is moved into the treated water tank and can be
+               requested for production.</p>
+        </field>
+    </record>
+</odoo>
