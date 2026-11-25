@@ -139,7 +139,7 @@ class PurchaseOrderForeignOps(models.Model):
         ('no', 'No'),
     ], string="Discrepancy?", default='no', tracking=True)
     org_doc_collected_bank = fields.Date(string="Org Doc Collected from App Bank", tracking=True)
-    shipment_exchange_rate = fields.Float(string="Exchange Rate", digits=(16, 4), tracking=True)
+    shipment_exchange_rate = fields.Float(string="Shipment Exchange Rate", digits=(16, 4), tracking=True)
     lc_settlement = fields.Float(string="LC Settlement", tracking=True)
     settlement_date = fields.Date(string="Settlement Date", tracking=True)
     org_doc_handed_fin = fields.Date(string="Org Doc Handed to Fin", tracking=True)
@@ -448,7 +448,7 @@ class PurchaseOrderForeignOps(models.Model):
     declaration_receive = fields.Date(string="Declaration Receive", tracking=True)
     delinquent_sett_date = fields.Date(string="Delinquent Sett Date", tracking=True)
     transitor_payment = fields.Float(string="Transitor Payment", tracking=True)
-    pc_container_deposit = fields.Date(string="Container Deposit", tracking=True)
+    pc_container_deposit = fields.Date(string="Container Deposit Date", tracking=True)
     transitor_payment_done = fields.Date(string="Transitor Payment Done", tracking=True)
 
     # Legacy post clearance fields (kept for compatibility)

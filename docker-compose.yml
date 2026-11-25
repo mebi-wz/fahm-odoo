@@ -5,20 +5,20 @@ services:
       context: .
       dockerfile: Dockerfile
 
-    image: fahm_odoo:19.0
+    image: fahm-odoo:19.0
 
-    container_name: dp_fahm_odoo19
+    container_name: dp_fahm-odoo19
 
     depends_on:
       - db19
 
     ports:
-      - "127.0.0.1:8092:8069"
-      - "127.0.0.1:8093:8072"
+      - "127.0.0.1:8096:8069"
+      - "127.0.0.1:8097:8072"
 
     volumes:
       - dp_fahm_odoo19-web-data:/var/lib/odoo
-      - .:/mnt/fahm_spare_part:rw
+      - .:/mnt/fahm:rw
       - ./odoo.conf:/etc/odoo/odoo.conf:ro
 
     environment:
@@ -31,44 +31,6 @@ services:
       - --database=fahm_sp
       - --db-filter=^fahm_sp$$
       - --no-database-list
-
-    restart: unless-stopped
-
-    networks:
-      - fahm_odoo_network
-
-  odoo19_production:
-    image: fahm_odoo:19.0
-
-    container_name: dp_fahm_odoo19_production
-
-    depends_on:
-      - db19
-
-    # Keep this port bound to localhost. Access it through an SSH tunnel only.
-    ports:
-      - "127.0.0.1:8094:8069"
-      - "127.0.0.1:8095:8072"
-
-    # The shared Odoo data volume stores filestores under each database name,
-    # so fahm_sp and production remain separated inside the same volume.
-    volumes:
-      - dp_fahm_odoo19-web-data:/var/lib/odoo
-      - .:/mnt/fahm_spare_part:rw
-      - ./odoo.conf:/etc/odoo/odoo.conf:ro
-
-    environment:
-      HOST: db19
-      USER: odoo_fahm
-      PASSWORD: odoo_fahm
-
-    command:
-      - odoo
-      - --database=production
-      - --db-filter=^production$$
-      - --no-database-list
-      - --workers=1
-      - --max-cron-threads=1
 
     restart: unless-stopped
 

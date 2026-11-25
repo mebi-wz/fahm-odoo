@@ -4,7 +4,7 @@
     'version': '19.0.1.0.0',
     'category': 'Accounting',
     'summary': 'Adds Unreconciled Amounts view to bank journals on dashboard and fixes payment link wizard.',
-    'author': '',
+    'author': 'Mehbuba',
     'depends': [
         'account',
         'base_accounting_kit',

@@ -8,7 +8,7 @@ class ProductProduct(models.Model):
 
     secondary_parts_display = fields.Char(
         related='product_tmpl_id.secondary_parts_display',
-        string='Secondary Part Numbers',
+        string='Secondary Part Numbers (Summary)',
         readonly=True,
     )
     has_secondary_parts = fields.Boolean(

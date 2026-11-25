@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <record id="shift_morning" model="fahm.production.shift">
+        <field name="name">Morning</field>
+        <field name="sequence">1</field>
+        <field name="hour_from">6.0</field>
+        <field name="hour_to">14.0</field>
+        <field name="company_id" eval="False"/>
+    </record>
+    <record id="shift_afternoon" model="fahm.production.shift">
+        <field name="name">Afternoon</field>
+        <field name="sequence">2</field>
+        <field name="hour_from">14.0</field>
+        <field name="hour_to">22.0</field>
+        <field name="company_id" eval="False"/>
+    </record>
+    <record id="shift_night" model="fahm.production.shift">
+        <field name="name">Night</field>
+        <field name="sequence">3</field>
+        <field name="hour_from">22.0</field>
+        <field name="hour_to">6.0</field>
+        <field name="company_id" eval="False"/>
+    </record>
+</odoo>

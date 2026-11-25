@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <record id="scrap_reason_blow_moulding" model="stock.scrap.reason.tag">
+        <field name="name">Blow-moulding defect</field>
+        <field name="sequence">101</field>
+    </record>
+    <record id="scrap_reason_underfill" model="stock.scrap.reason.tag">
+        <field name="name">Underfill / overfill</field>
+        <field name="sequence">102</field>
+    </record>
+    <record id="scrap_reason_leakage" model="stock.scrap.reason.tag">
+        <field name="name">Leakage</field>
+        <field name="sequence">103</field>
+    </record>
+    <record id="scrap_reason_cap" model="stock.scrap.reason.tag">
+        <field name="name">Cap / seal defect</field>
+        <field name="sequence">104</field>
+    </record>
+    <record id="scrap_reason_label" model="stock.scrap.reason.tag">
+        <field name="name">Label / coding defect</field>
+        <field name="sequence">105</field>
+    </record>
+    <record id="scrap_reason_contamination" model="stock.scrap.reason.tag">
+        <field name="name">Contamination / foreign matter</field>
+        <field name="sequence">106</field>
+    </record>
+    <record id="scrap_reason_qc_fail" model="stock.scrap.reason.tag">
+        <field name="name">Failed QC</field>
+        <field name="sequence">107</field>
+    </record>
+</odoo>

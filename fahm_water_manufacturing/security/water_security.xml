@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="privilege_water_quality" model="res.groups.privilege">
+        <field name="name">Water Quality Control</field>
+        <field name="sequence">6</field>
+        <field name="category_id" ref="base.module_category_supply_chain"/>
+    </record>
+
+    <record id="group_water_qc_inspector" model="res.groups">
+        <field name="name">Inspector</field>
+        <field name="sequence">10</field>
+        <field name="privilege_id" ref="privilege_water_quality"/>
+        <field name="implied_ids" eval="[(4, ref('mrp.group_mrp_user'))]"/>
+        <field name="comment">Records and evaluates water quality checks.</field>
+    </record>
+
+    <record id="group_water_qc_manager" model="res.groups">
+        <field name="name">Manager</field>
+        <field name="sequence">20</field>
+        <field name="privilege_id" ref="privilege_water_quality"/>
+        <field name="implied_ids" eval="[(4, ref('group_water_qc_inspector'))]"/>
+        <field name="comment">Configures quality parameters and can reopen evaluated checks.</field>
+        <field name="user_ids" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
+    </record>
+
+    <record id="rule_water_qc_check_company" model="ir.rule">
+        <field name="name">Water QC check: multi-company</field>
+        <field name="model_id" ref="model_fahm_water_qc_check"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+
+    <record id="rule_water_source_company" model="ir.rule">
+        <field name="name">Water source: multi-company</field>
+        <field name="model_id" ref="model_fahm_water_source"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+
+    <record id="rule_water_production_report_company" model="ir.rule">
+        <field name="name">Water production analysis: multi-company</field>
+        <field name="model_id" ref="model_fahm_water_production_report"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+</odoo>

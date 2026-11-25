@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_report_fahm_qc_certificate" model="ir.actions.report">
+        <field name="name">Certificate of Analysis</field>
+        <field name="model">fahm.water.qc.check</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">fahm_water_manufacturing.report_fahm_qc_certificate</field>
+        <field name="report_file">fahm_water_manufacturing.report_fahm_qc_certificate</field>
+        <field name="print_report_name">'CoA - %s' % object.name.replace('/', '-')</field>
+        <field name="binding_model_id" ref="model_fahm_water_qc_check"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <template id="report_fahm_qc_certificate_document">
+        <t t-call="web.external_layout">
+            <t t-set="o" t-value="o.with_context(lang=o.inspector_id.lang or user.lang)"/>
+            <div class="page">
+                <h2 class="mb-1">
+                    <t t-if="o.check_type == 'finished_product'">Certificate of Analysis</t>
+                    <t t-else="">Water Quality Test Report</t>
+                </h2>
+                <p class="text-muted mb-4"><span t-field="o.name"/></p>
+
+                <div class="row mb-4">
+                    <div class="col-6">
+                        <table class="table table-sm table-borderless">
+                            <tr><td><strong>Stage</strong></td><td><span t-field="o.check_type"/></td></tr>
+                            <tr t-if="o.product_id"><td><strong>Product</strong></td><td><span t-field="o.product_id"/></td></tr>
+                            <tr t-if="o.lot_id"><td><strong>Lot / Batch</strong></td><td><span t-field="o.lot_id"/></td></tr>
+                            <tr t-if="o.lot_id and o.lot_id.expiration_date"><td><strong>Best Before</strong></td><td><span t-field="o.lot_id.expiration_date" t-options="{'widget': 'date'}"/></td></tr>
+                            <tr t-if="o.production_id"><td><strong>Manufacturing Order</strong></td><td><span t-field="o.production_id"/></td></tr>
+                            <tr t-if="o.source_id"><td><strong>Water Source</strong></td><td><span t-field="o.source_id"/></td></tr>
+                            <tr t-if="o.sampling_point"><td><strong>Sampling Point</strong></td><td><span t-field="o.sampling_point"/></td></tr>
+                        </table>
+                    </div>
+                    <div class="col-6">
+                        <table class="table table-sm table-borderless">
+                            <tr><td><strong>Sample Date</strong></td><td><span t-field="o.date"/></td></tr>
+                            <tr t-if="o.date_evaluated"><td><strong>Evaluated On</strong></td><td><span t-field="o.date_evaluated"/></td></tr>
+                            <tr><td><strong>Inspector</strong></td><td><span t-field="o.inspector_id"/></td></tr>
+                            <tr t-if="o.production_id.fahm_line_id"><td><strong>Production Line</strong></td><td><span t-field="o.production_id.fahm_line_id"/></td></tr>
+                            <tr t-if="o.production_id.fahm_shift_id"><td><strong>Shift</strong></td><td><span t-field="o.production_id.fahm_shift_id"/></td></tr>
+                        </table>
+                    </div>
+                </div>
+
+                <table class="table table-sm o_main_table">
+                    <thead>
+                        <tr>
+                            <th>Parameter</th>
+                            <th>Category</th>
+                            <th>Method</th>
+                            <th>Specification</th>
+                            <th class="text-end">Result</th>
+                            <th class="text-center">Conformity</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr t-foreach="o.line_ids" t-as="line">
+                            <td><span t-field="line.parameter_id.name"/></td>
+                            <td><span t-field="line.category"/></td>
+                            <td><span t-field="line.parameter_id.method"/></td>
+                            <td><span t-esc="line.limit_display"/></td>
+                            <td class="text-end">
+                                <t t-if="line.test_type == 'measure'">
+                                    <span t-esc="'%g' % line.value"/> <span t-esc="line.unit or ''"/>
+                                </t>
+                                <t t-else=""><span t-field="line.pass_fail_result"/></t>
+                            </td>
+                            <td class="text-center">
+                                <strong t-if="line.result == 'pass'" class="text-success">PASS</strong>
+                                <strong t-elif="line.result == 'fail'" class="text-danger">FAIL</strong>
+                                <span t-else="" class="text-muted">Pending</span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="mt-4 p-3 border">
+                    <strong>Conclusion: </strong>
+                    <span t-if="o.state == 'passed'" class="text-success">
+                        The sample conforms to all specified requirements. <t t-if="o.check_type == 'finished_product'">The batch is released.</t>
+                    </span>
+                    <span t-elif="o.state == 'failed'" class="text-danger">
+                        The sample does NOT conform to the specified requirements. <t t-if="o.check_type == 'finished_product'">The batch is on hold.</t>
+                    </span>
+                    <span t-else="">Evaluation pending.</span>
+                </div>
+
+                <div t-if="o.note" class="mt-3">
+                    <strong>Notes</strong>
+                    <div t-field="o.note"/>
+                </div>
+
+                <div class="row mt-5">
+                    <div class="col-6">
+                        <p>Tested by: <span t-field="o.inspector_id"/></p>
+                        <p class="mt-4">Signature: ______________________</p>
+                    </div>
+                    <div class="col-6">
+                        <p>Approved by (QC Manager):</p>
+                        <p class="mt-4">Signature: ______________________</p>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <template id="report_fahm_qc_certificate">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="fahm_water_manufacturing.report_fahm_qc_certificate_document"/>
+            </t>
+        </t>
+    </template>
+</odoo>

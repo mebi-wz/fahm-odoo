@@ -49,7 +49,7 @@ class ProductTemplate(models.Model):
         help="All part numbers (Primary and Secondary) available for this product.",
     )
     secondary_parts_display = fields.Char(
-        string='Secondary Part Numbers',
+        string='Secondary Part Numbers (Summary)',
         compute='_compute_secondary_parts_info',
         store=True,
         help="Summary list of all secondary / cross-reference part numbers.",

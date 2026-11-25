@@ -8,7 +8,7 @@ class ProductTemplate(models.Model):
     _inherit = 'product.template'
 
     is_active_product = fields.Boolean(
-        string="Active", 
+        string="Active Product",
         default=True,
         help="If unchecked, this product is inactive and cannot be purchased or sold."
     )
@@ -211,7 +211,7 @@ class ProductProduct(models.Model):
 
     is_active_product = fields.Boolean(
         related='product_tmpl_id.is_active_product',
-        string="Active",
+        string="Active Product",
         store=True,
         readonly=False
     )

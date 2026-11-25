@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_fahm_water_qc_parameter_list" model="ir.ui.view">
+        <field name="name">fahm.water.qc.parameter.list</field>
+        <field name="model">fahm.water.qc.parameter</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="category"/>
+                <field name="test_type"/>
+                <field name="limit_display"/>
+                <field name="stage_raw_water" string="Raw"/>
+                <field name="stage_treated_water" string="Treated"/>
+                <field name="stage_finished_product" string="Finished"/>
+                <field name="method" optional="show"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_fahm_water_qc_parameter_form" model="ir.ui.view">
+        <field name="name">fahm.water.qc.parameter.form</field>
+        <field name="model">fahm.water.qc.parameter</field>
+        <field name="arch" type="xml">
+            <form string="Quality Parameter">
+                <sheet>
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active"/>
+                    <div class="oe_title">
+                        <h1><field name="name" placeholder="e.g. pH"/></h1>
+                    </div>
+                    <group>
+                        <group string="Test">
+                            <field name="category"/>
+                            <field name="test_type"/>
+                            <field name="method"/>
+                            <field name="active" invisible="1"/>
+                        </group>
+                        <group string="Limits" invisible="test_type != 'measure'">
+                            <field name="unit"/>
+                            <field name="has_min"/>
+                            <field name="min_value" invisible="not has_min"/>
+                            <field name="has_max"/>
+                            <field name="max_value" invisible="not has_max"/>
+                        </group>
+                    </group>
+                    <group string="Applies to">
+                        <field name="stage_raw_water"/>
+                        <field name="stage_treated_water"/>
+                        <field name="stage_finished_product"/>
+                    </group>
+                    <field name="description" placeholder="Sampling and testing instructions..."/>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_fahm_water_qc_parameter_search" model="ir.ui.view">
+        <field name="name">fahm.water.qc.parameter.search</field>
+        <field name="model">fahm.water.qc.parameter</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <filter string="Raw Water" name="raw" domain="[('stage_raw_water', '=', True)]"/>
+                <filter string="Treated Water" name="treated" domain="[('stage_treated_water', '=', True)]"/>
+                <filter string="Finished Product" name="finished" domain="[('stage_finished_product', '=', True)]"/>
+                <separator/>
+                <filter string="Archived" name="inactive" domain="[('active', '=', False)]"/>
+                <group>
+                    <filter string="Category" name="groupby_category" context="{'group_by': 'category'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_fahm_water_qc_parameter" model="ir.actions.act_window">
+        <field name="name">Quality Parameters</field>
+        <field name="res_model">fahm.water.qc.parameter</field>
+        <field name="view_mode">list,form</field>
+    </record>
+</odoo>

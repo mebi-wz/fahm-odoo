@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_fahm_water_qc_check_list" model="ir.ui.view">
+        <field name="name">fahm.water.qc.check.list</field>
+        <field name="model">fahm.water.qc.check</field>
+        <field name="arch" type="xml">
+            <list decoration-danger="state == 'failed'" decoration-muted="state == 'draft'">
+                <field name="name"/>
+                <field name="date"/>
+                <field name="check_type"/>
+                <field name="product_id" optional="show"/>
+                <field name="lot_id" optional="show"/>
+                <field name="production_id" optional="show"/>
+                <field name="source_id" optional="show"/>
+                <field name="inspector_id" widget="many2one_avatar_user" optional="show"/>
+                <field name="company_id" groups="base.group_multi_company" optional="hide"/>
+                <field name="state" widget="badge"
+                       decoration-success="state == 'passed'"
+                       decoration-danger="state == 'failed'"
+                       decoration-info="state == 'draft'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_fahm_water_qc_check_form" model="ir.ui.view">
+        <field name="name">fahm.water.qc.check.form</field>
+        <field name="model">fahm.water.qc.check</field>
+        <field name="arch" type="xml">
+            <form string="Water Quality Check">
+                <header>
+                    <button name="action_evaluate" type="object" string="Evaluate" class="oe_highlight"
+                            invisible="state != 'draft'"
+                            groups="fahm_water_manufacturing.group_water_qc_inspector"/>
+                    <button name="action_load_parameters" type="object" string="Load Missing Tests"
+                            invisible="state != 'draft'"
+                            groups="fahm_water_manufacturing.group_water_qc_inspector"/>
+                    <button name="%(fahm_water_manufacturing.action_report_fahm_qc_certificate)d" type="action"
+                            string="Print Certificate" invisible="state == 'draft'"/>
+                    <button name="action_reset_draft" type="object" string="Reopen"
+                            invisible="state == 'draft'"
+                            groups="fahm_water_manufacturing.group_water_qc_manager"
+                            confirm="Reopen this QC check? The batch release decision will be reset."/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,passed"/>
+                </header>
+                <sheet>
+                    <widget name="web_ribbon" title="Passed" bg_color="text-bg-success" invisible="state != 'passed'"/>
+                    <widget name="web_ribbon" title="Failed" bg_color="text-bg-danger" invisible="state != 'failed'"/>
+                    <div class="oe_title">
+                        <h1><field name="name" readonly="1"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="check_type" readonly="state != 'draft' or line_count"/>
+                            <field name="production_id" readonly="state != 'draft'"
+                                   invisible="check_type != 'finished_product'"/>
+                            <field name="product_id" readonly="state != 'draft'"
+                                   invisible="check_type != 'finished_product'"
+                                   required="check_type == 'finished_product'"/>
+                            <field name="lot_id" readonly="state != 'draft'"
+                                   invisible="check_type != 'finished_product'"
+                                   context="{'default_product_id': product_id}"/>
+                            <field name="source_id" readonly="state != 'draft'"
+                                   invisible="check_type == 'finished_product'"/>
+                            <field name="sampling_point" readonly="state != 'draft'"/>
+                        </group>
+                        <group>
+                            <field name="date" readonly="state != 'draft'"/>
+                            <field name="inspector_id" readonly="state != 'draft'" widget="many2one_avatar_user"/>
+                            <field name="date_evaluated" invisible="not date_evaluated"/>
+                            <field name="failed_count" invisible="state == 'draft'"/>
+                            <field name="line_count" invisible="1"/>
+                            <field name="company_id" groups="base.group_multi_company" readonly="state != 'draft'"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Test Results" name="results">
+                            <field name="line_ids" readonly="state != 'draft'">
+                                <list editable="bottom" create="1"
+                                      decoration-danger="result == 'fail'"
+                                      decoration-success="result == 'pass'">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="parameter_id"/>
+                                    <field name="category" optional="show"/>
+                                    <field name="test_type" column_invisible="1"/>
+                                    <field name="limit_display"/>
+                                    <field name="value" invisible="test_type != 'measure'"/>
+                                    <field name="is_measured" invisible="test_type != 'measure'" optional="show"/>
+                                    <field name="unit" invisible="test_type != 'measure'"/>
+                                    <field name="pass_fail_result" invisible="test_type != 'pass_fail'"/>
+                                    <field name="result" widget="badge"
+                                           decoration-success="result == 'pass'"
+                                           decoration-danger="result == 'fail'"
+                                           decoration-muted="result == 'pending'"/>
+                                    <field name="note" optional="show"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Notes" name="notes">
+                            <field name="note" placeholder="Observations, corrective actions..."/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_fahm_water_qc_check_search" model="ir.ui.view">
+        <field name="name">fahm.water.qc.check.search</field>
+        <field name="model">fahm.water.qc.check</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="product_id"/>
+                <field name="lot_id"/>
+                <field name="production_id"/>
+                <field name="source_id"/>
+                <filter string="To Evaluate" name="draft" domain="[('state', '=', 'draft')]"/>
+                <filter string="Passed" name="passed" domain="[('state', '=', 'passed')]"/>
+                <filter string="Failed" name="failed" domain="[('state', '=', 'failed')]"/>
+                <separator/>
+                <filter string="Raw Water" name="raw_water" domain="[('check_type', '=', 'raw_water')]"/>
+                <filter string="Treated Water" name="treated_water" domain="[('check_type', '=', 'treated_water')]"/>
+                <filter string="Finished Product" name="finished_product" domain="[('check_type', '=', 'finished_product')]"/>
+                <separator/>
+                <filter string="Date" name="filter_date" date="date"/>
+                <group>
+                    <filter string="Stage" name="groupby_check_type" context="{'group_by': 'check_type'}"/>
+                    <filter string="Status" name="groupby_state" context="{'group_by': 'state'}"/>
+                    <filter string="Product" name="groupby_product" context="{'group_by': 'product_id'}"/>
+                    <filter string="Water Source" name="groupby_source" context="{'group_by': 'source_id'}"/>
+                    <filter string="Date" name="groupby_date" context="{'group_by': 'date:day'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="view_fahm_water_qc_check_pivot" model="ir.ui.view">
+        <field name="name">fahm.water.qc.check.pivot</field>
+        <field name="model">fahm.water.qc.check</field>
+        <field name="arch" type="xml">
+            <pivot string="QC Checks" sample="1">
+                <field name="date" interval="month" type="row"/>
+                <field name="state" type="col"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="action_fahm_water_qc_check" model="ir.actions.act_window">
+        <field name="name">Quality Checks</field>
+        <field name="res_model">fahm.water.qc.check</field>
+        <field name="view_mode">list,form,pivot</field>
+        <field name="context">{'search_default_draft': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Record a water quality check</p>
+            <p>Raw water, treated water and finished batch checks. Tests are loaded automatically from the quality parameters.</p>
+        </field>
+    </record>
+
+    <record id="action_fahm_water_qc_check_water" model="ir.actions.act_window">
+        <field name="name">Water Treatment Checks</field>
+        <field name="res_model">fahm.water.qc.check</field>
+        <field name="view_mode">list,form,pivot</field>
+        <field name="domain">[('check_type', 'in', ('raw_water', 'treated_water'))]</field>
+        <field name="context">{'default_check_type': 'treated_water'}</field>
+    </record>
+
+    <record id="action_fahm_water_qc_check_batch" model="ir.actions.act_window">
+        <field name="name">Batch Release Checks</field>
+        <field name="res_model">fahm.water.qc.check</field>
+        <field name="view_mode">list,form,pivot</field>
+        <field name="domain">[('check_type', '=', 'finished_product')]</field>
+        <field name="context">{'default_check_type': 'finished_product', 'search_default_draft': 1}</field>
+    </record>
+</odoo>

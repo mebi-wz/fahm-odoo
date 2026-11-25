@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <record id="qc_param_ph" model="fahm.water.qc.parameter">
+        <field name="name">pH</field>
+        <field name="sequence">10</field>
+        <field name="category">chemical</field>
+        <field name="stage_raw_water" eval="True"/>
+        <field name="stage_treated_water" eval="True"/>
+        <field name="stage_finished_product" eval="True"/>
+        <field name="test_type">measure</field>
+        <field name="has_min" eval="True"/>
+        <field name="min_value">6.5</field>
+        <field name="has_max" eval="True"/>
+        <field name="max_value">8.5</field>
+        <field name="method">pH meter</field>
+    </record>
+    <record id="qc_param_tds" model="fahm.water.qc.parameter">
+        <field name="name">Total Dissolved Solids (TDS)</field>
+        <field name="sequence">20</field>
+        <field name="category">chemical</field>
+        <field name="stage_raw_water" eval="False"/>
+        <field name="stage_treated_water" eval="True"/>
+        <field name="stage_finished_product" eval="True"/>
+        <field name="test_type">measure</field>
+        <field name="unit">mg/L</field>
+        <field name="has_min" eval="True"/>
+        <field name="min_value">50</field>
+        <field name="has_max" eval="True"/>
+        <field name="max_value">500</field>
+        <field name="method">TDS meter</field>
+    </record>
+    <record id="qc_param_tds_raw" model="fahm.water.qc.parameter">
+        <field name="name">Total Dissolved Solids – raw water</field>
+        <field name="sequence">30</field>
+        <field name="category">chemical</field>
+        <field name="stage_raw_water" eval="True"/>
+        <field name="stage_treated_water" eval="False"/>
+        <field name="stage_finished_product" eval="False"/>
+        <field name="test_type">measure</field>
+        <field name="unit">mg/L</field>
+        <field name="has_max" eval="True"/>
+        <field name="max_value">1000</field>
+        <field name="method">TDS meter</field>
+    </record>
+    <record id="qc_param_conductivity" model="fahm.water.qc.parameter">
+        <field name="name">Electrical Conductivity</field>
+        <field name="sequence">40</field>
+        <field name="category">chemical</field>
+        <field name="stage_raw_water" eval="False"/>
+        <field name="stage_treated_water" eval="True"/>
+        <field name="stage_finished_product" eval="True"/>
+        <field name="test_type">measure</field>
+        <field name="unit">µS/cm</field>
+        <field name="has_max" eval="True"/>
+        <field name="max_value">1000</field>
+        <field name="method">Conductivity meter</field>
+    </record>
+    <record id="qc_param_turbidity" model="fahm.water.qc.parameter">
+        <field name="name">Turbidity</field>
+        <field name="sequence">50</field>
+        <field name="category">physical</field>
+        <field name="stage_raw_water" eval="False"/>
+        <field name="stage_treated_water" eval="True"/>
+        <field name="stage_finished_product" eval="True"/>
+        <field name="test_type">measure</field>
+        <field name="unit">NTU</field>
+        <field name="has_max" eval="True"/>
+        <field name="max_value">1</field>
+        <field name="method">Turbidimeter</field>
+    </record>
+    <record id="qc_param_turbidity_raw" model="fahm.water.qc.parameter">
+        <field name="name">Turbidity – raw water</field>
+        <field name="sequence">60</field>
+        <field name="category">physical</field>
+        <field name="stage_raw_water" eval="True"/>
+        <field name="stage_treated_water" eval="False"/>
+        <field name="stage_finished_product" eval="False"/>
+        <field name="test_type">measure</field>
+        <field name="unit">NTU</field>
+        <field name="has_max" eval="True"/>
+        <field name="max_value">5</field>
+        <field name="method">Turbidimeter</field>
+    </record>
+    <record id="qc_param_hardness" model="fahm.water.qc.parameter">
+        <field name="name">Total Hardness</field>
+        <field name="sequence">70</field>
+        <field name="category">chemical</field>
+        <field name="stage_raw_water" eval="True"/>
+        <field name="stage_treated_water" eval="True"/>
+        <field name="stage_finished_product" eval="False"/>
+        <field name="test_type">measure</field>
+        <field name="unit">mg/L CaCO3</field>
+        <field name="has_max" eval="True"/>
+        <field name="max_value">300</field>
+        <field name="method">EDTA titration</field>
+    </record>
+    <record id="qc_param_ozone" model="fahm.water.qc.parameter">
+        <field name="name">Residual Ozone</field>
+        <field name="sequence">80</field>
+        <field name="category">chemical</field>
+        <field name="stage_raw_water" eval="False"/>
+        <field name="stage_treated_water" eval="True"/>
+        <field name="stage_finished_product" eval="False"/>
+        <field name="test_type">measure</field>
+        <field name="unit">mg/L</field>
+        <field name="has_min" eval="True"/>
+        <field name="min_value">0.1</field>
+        <field name="has_max" eval="True"/>
+        <field name="max_value">0.4</field>
+        <field name="method">DPD test kit</field>
+    </record>
+    <record id="qc_param_coliform" model="fahm.water.qc.parameter">
+        <field name="name">Total Coliform</field>
+        <field name="sequence">90</field>
+        <field name="category">microbiological</field>
+        <field name="stage_raw_water" eval="False"/>
+        <field name="stage_treated_water" eval="True"/>
+        <field name="stage_finished_product" eval="True"/>
+        <field name="test_type">measure</field>
+        <field name="unit">CFU/100 mL</field>
+        <field name="has_max" eval="True"/>
+        <field name="max_value">0</field>
+        <field name="method">Membrane filtration</field>
+    </record>
+    <record id="qc_param_ecoli" model="fahm.water.qc.parameter">
+        <field name="name">E. coli</field>
+        <field name="sequence">100</field>
+        <field name="category">microbiological</field>
+        <field name="stage_raw_water" eval="False"/>
+        <field name="stage_treated_water" eval="True"/>
+        <field name="stage_finished_product" eval="True"/>
+        <field name="test_type">measure</field>
+        <field name="unit">CFU/100 mL</field>
+        <field name="has_max" eval="True"/>
+        <field name="max_value">0</field>
+        <field name="method">Membrane filtration</field>
+    </record>
+    <record id="qc_param_appearance" model="fahm.water.qc.parameter">
+        <field name="name">Appearance (clear, no particles)</field>
+        <field name="sequence">110</field>
+        <field name="category">physical</field>
+        <field name="stage_raw_water" eval="False"/>
+        <field name="stage_treated_water" eval="False"/>
+        <field name="stage_finished_product" eval="True"/>
+        <field name="test_type">pass_fail</field>
+        <field name="method">Visual</field>
+    </record>
+    <record id="qc_param_odour" model="fahm.water.qc.parameter">
+        <field name="name">Odour</field>
+        <field name="sequence">120</field>
+        <field name="category">physical</field>
+        <field name="stage_raw_water" eval="False"/>
+        <field name="stage_treated_water" eval="False"/>
+        <field name="stage_finished_product" eval="True"/>
+        <field name="test_type">pass_fail</field>
+        <field name="method">Sensory</field>
+    </record>
+    <record id="qc_param_taste" model="fahm.water.qc.parameter">
+        <field name="name">Taste</field>
+        <field name="sequence">130</field>
+        <field name="category">physical</field>
+        <field name="stage_raw_water" eval="False"/>
+        <field name="stage_treated_water" eval="False"/>
+        <field name="stage_finished_product" eval="True"/>
+        <field name="test_type">pass_fail</field>
+        <field name="method">Sensory</field>
+    </record>
+    <record id="qc_param_fill_level" model="fahm.water.qc.parameter">
+        <field name="name">Fill Level</field>
+        <field name="sequence">140</field>
+        <field name="category">packaging</field>
+        <field name="stage_raw_water" eval="False"/>
+        <field name="stage_treated_water" eval="False"/>
+        <field name="stage_finished_product" eval="True"/>
+        <field name="test_type">pass_fail</field>
+        <field name="method">Visual / weight</field>
+    </record>
+    <record id="qc_param_cap_seal" model="fahm.water.qc.parameter">
+        <field name="name">Cap Seal &amp; Torque</field>
+        <field name="sequence">150</field>
+        <field name="category">packaging</field>
+        <field name="stage_raw_water" eval="False"/>
+        <field name="stage_treated_water" eval="False"/>
+        <field name="stage_finished_product" eval="True"/>
+        <field name="test_type">pass_fail</field>
+        <field name="method">Torque tester</field>
+    </record>
+    <record id="qc_param_label_coding" model="fahm.water.qc.parameter">
+        <field name="name">Label &amp; Date Coding</field>
+        <field name="sequence">160</field>
+        <field name="category">packaging</field>
+        <field name="stage_raw_water" eval="False"/>
+        <field name="stage_treated_water" eval="False"/>
+        <field name="stage_finished_product" eval="True"/>
+        <field name="test_type">pass_fail</field>
+        <field name="method">Visual</field>
+    </record>
+</odoo>

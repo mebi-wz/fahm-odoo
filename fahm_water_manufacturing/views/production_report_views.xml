@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_fahm_water_production_report_pivot" model="ir.ui.view">
+        <field name="name">fahm.water.production.report.pivot</field>
+        <field name="model">fahm.water.production.report</field>
+        <field name="arch" type="xml">
+            <pivot string="Water Production Analysis" sample="1">
+                <field name="date" interval="day" type="row"/>
+                <field name="line_id" type="col"/>
+                <field name="liters_produced" type="measure"/>
+                <field name="qty_produced" type="measure"/>
+                <field name="reject_qty" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="view_fahm_water_production_report_graph" model="ir.ui.view">
+        <field name="name">fahm.water.production.report.graph</field>
+        <field name="model">fahm.water.production.report</field>
+        <field name="arch" type="xml">
+            <graph string="Water Production Analysis" type="bar" stacked="1" sample="1">
+                <field name="date" interval="day"/>
+                <field name="product_id"/>
+                <field name="liters_produced" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="view_fahm_water_production_report_list" model="ir.ui.view">
+        <field name="name">fahm.water.production.report.list</field>
+        <field name="model">fahm.water.production.report</field>
+        <field name="arch" type="xml">
+            <list create="0" edit="0" delete="0">
+                <field name="date"/>
+                <field name="production_id"/>
+                <field name="product_id"/>
+                <field name="line_id"/>
+                <field name="shift_id"/>
+                <field name="qty_planned" sum="Total"/>
+                <field name="qty_produced" sum="Total"/>
+                <field name="liters_produced" sum="Total"/>
+                <field name="reject_qty" sum="Total"/>
+                <field name="efficiency" avg="Average"/>
+                <field name="reject_rate" avg="Average"/>
+                <field name="qc_state" widget="badge"
+                       decoration-success="qc_state == 'passed'"
+                       decoration-danger="qc_state == 'failed'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_fahm_water_production_report_search" model="ir.ui.view">
+        <field name="name">fahm.water.production.report.search</field>
+        <field name="model">fahm.water.production.report</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="product_id"/>
+                <field name="line_id"/>
+                <field name="shift_id"/>
+                <field name="production_id"/>
+                <filter string="Date" name="filter_date" date="date"/>
+                <filter string="Last 30 Days" name="last_30_days" domain="[('date', '&gt;=', '-30d')]"/>
+                <group>
+                    <filter string="Day" name="groupby_day" context="{'group_by': 'date:day'}"/>
+                    <filter string="Product" name="groupby_product" context="{'group_by': 'product_id'}"/>
+                    <filter string="Production Line" name="groupby_line" context="{'group_by': 'line_id'}"/>
+                    <filter string="Shift" name="groupby_shift" context="{'group_by': 'shift_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_fahm_water_production_report" model="ir.actions.act_window">
+        <field name="name">Water Production Analysis</field>
+        <field name="res_model">fahm.water.production.report</field>
+        <field name="view_mode">pivot,graph,list</field>
+        <field name="context">{'search_default_last_30_days': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_empty_folder">No finished water production yet</p>
+            <p>Completed manufacturing orders of finished water products appear here.</p>
+        </field>
+    </record>
+</odoo>

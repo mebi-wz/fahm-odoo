@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Operations -->
+    <menuitem id="menu_fahm_water_production"
+              name="Water Production"
+              parent="mrp.menu_mrp_manufacturing"
+              action="action_fahm_water_production"
+              sequence="5"/>
+
+    <!-- Quality -->
+    <menuitem id="menu_fahm_water_quality_root"
+              name="Water Quality"
+              parent="mrp.menu_mrp_root"
+              sequence="15"
+              groups="mrp.group_mrp_user"/>
+    <menuitem id="menu_fahm_water_qc_batch"
+              name="Batch Release Checks"
+              parent="menu_fahm_water_quality_root"
+              action="action_fahm_water_qc_check_batch"
+              sequence="10"/>
+    <menuitem id="menu_fahm_water_qc_treatment"
+              name="Water Treatment Checks"
+              parent="menu_fahm_water_quality_root"
+              action="action_fahm_water_qc_check_water"
+              sequence="20"/>
+    <menuitem id="menu_fahm_water_qc_all"
+              name="All Quality Checks"
+              parent="menu_fahm_water_quality_root"
+              action="action_fahm_water_qc_check"
+              sequence="30"/>
+
+    <!-- Reporting -->
+    <menuitem id="menu_fahm_water_production_report"
+              name="Water Production Analysis"
+              parent="mrp.menu_mrp_reporting"
+              action="action_fahm_water_production_report"
+              sequence="5"/>
+
+    <!-- Configuration -->
+    <menuitem id="menu_fahm_water_config"
+              name="Water Plant"
+              parent="mrp.menu_mrp_configuration"
+              sequence="50"/>
+    <menuitem id="menu_fahm_water_products"
+              name="Water Products"
+              parent="menu_fahm_water_config"
+              action="action_fahm_water_products"
+              sequence="10"/>
+    <menuitem id="menu_fahm_water_lines"
+              name="Production Lines"
+              parent="menu_fahm_water_config"
+              action="action_fahm_water_lines"
+              sequence="20"/>
+    <menuitem id="menu_fahm_production_shift"
+              name="Shifts"
+              parent="menu_fahm_water_config"
+              action="action_fahm_production_shift"
+              groups="mrp.group_mrp_manager"
+              sequence="30"/>
+    <menuitem id="menu_fahm_water_source"
+              name="Water Sources"
+              parent="menu_fahm_water_config"
+              action="action_fahm_water_source"
+              sequence="40"/>
+    <menuitem id="menu_fahm_water_qc_parameter"
+              name="Quality Parameters"
+              parent="menu_fahm_water_config"
+              action="action_fahm_water_qc_parameter"
+              groups="fahm_water_manufacturing.group_water_qc_manager"
+              sequence="50"/>
+</odoo>

@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Water sources -->
+    <record id="demo_source_borehole_1" model="fahm.water.source">
+        <field name="name">Borehole No. 1</field>
+        <field name="code">BH-01</field>
+        <field name="source_type">borehole</field>
+        <field name="depth_m">180</field>
+    </record>
+
+    <!-- Production line -->
+    <record id="demo_line_bottle_1" model="mrp.workcenter">
+        <field name="name">Bottle Line 1 (0.5 L – 1.5 L)</field>
+        <field name="code">BL1</field>
+        <field name="fahm_is_water_line" eval="True"/>
+        <field name="fahm_line_type">bottle</field>
+        <field name="fahm_rated_capacity">6000</field>
+        <field name="resource_calendar_id" ref="resource.resource_calendar_std"/>
+    </record>
+
+    <!-- Materials -->
+    <record id="demo_product_treated_water" model="product.product">
+        <field name="name">Treated Water</field>
+        <field name="type">consu</field>
+        <field name="is_storable" eval="True"/>
+        <field name="uom_id" ref="uom.product_uom_litre"/>
+        <field name="fahm_water_type">treated_water</field>
+        <field name="fahm_volume_per_unit">1</field>
+    </record>
+    <record id="demo_product_preform" model="product.product">
+        <field name="name">PET Preform 12 g (0.5 L)</field>
+        <field name="type">consu</field>
+        <field name="is_storable" eval="True"/>
+        <field name="fahm_water_type">preform</field>
+    </record>
+    <record id="demo_product_cap" model="product.product">
+        <field name="name">Cap 28 mm</field>
+        <field name="type">consu</field>
+        <field name="is_storable" eval="True"/>
+        <field name="fahm_water_type">cap</field>
+    </record>
+    <record id="demo_product_label" model="product.product">
+        <field name="name">Label Fahm 0.5 L</field>
+        <field name="type">consu</field>
+        <field name="is_storable" eval="True"/>
+        <field name="fahm_water_type">label</field>
+    </record>
+    <record id="demo_product_shrink" model="product.product">
+        <field name="name">Shrink Film</field>
+        <field name="type">consu</field>
+        <field name="is_storable" eval="True"/>
+        <field name="uom_id" ref="uom.product_uom_kgm"/>
+        <field name="fahm_water_type">shrink_film</field>
+    </record>
+
+    <!-- Finished product -->
+    <record id="demo_product_water_05_24" model="product.product">
+        <field name="name">Fahm Water 0.5 L (Pack of 24)</field>
+        <field name="type">consu</field>
+        <field name="is_storable" eval="True"/>
+        <field name="sale_ok" eval="True"/>
+        <field name="tracking">lot</field>
+        <field name="use_expiration_date" eval="True"/>
+        <field name="expiration_time">365</field>
+        <field name="fahm_water_type">finished_water</field>
+        <field name="fahm_volume_per_unit">12</field>
+        <field name="fahm_units_per_pack">24</field>
+        <field name="fahm_qc_required" eval="True"/>
+    </record>
+
+    <record id="demo_bom_water_05_24" model="mrp.bom">
+        <field name="product_tmpl_id" ref="demo_product_water_05_24_product_template"/>
+        <field name="product_qty">1</field>
+        <field name="type">normal</field>
+    </record>
+    <record id="demo_bom_line_water" model="mrp.bom.line">
+        <field name="bom_id" ref="demo_bom_water_05_24"/>
+        <field name="product_id" ref="demo_product_treated_water"/>
+        <field name="product_qty">12.2</field>
+        <field name="product_uom_id" ref="uom.product_uom_litre"/>
+    </record>
+    <record id="demo_bom_line_preform" model="mrp.bom.line">
+        <field name="bom_id" ref="demo_bom_water_05_24"/>
+        <field name="product_id" ref="demo_product_preform"/>
+        <field name="product_qty">24</field>
+    </record>
+    <record id="demo_bom_line_cap" model="mrp.bom.line">
+        <field name="bom_id" ref="demo_bom_water_05_24"/>
+        <field name="product_id" ref="demo_product_cap"/>
+        <field name="product_qty">24</field>
+    </record>
+    <record id="demo_bom_line_label" model="mrp.bom.line">
+        <field name="bom_id" ref="demo_bom_water_05_24"/>
+        <field name="product_id" ref="demo_product_label"/>
+        <field name="product_qty">24</field>
+    </record>
+    <record id="demo_bom_line_shrink" model="mrp.bom.line">
+        <field name="bom_id" ref="demo_bom_water_05_24"/>
+        <field name="product_id" ref="demo_product_shrink"/>
+        <field name="product_qty">0.04</field>
+        <field name="product_uom_id" ref="uom.product_uom_kgm"/>
+    </record>
+</odoo>

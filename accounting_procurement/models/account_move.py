@@ -6,7 +6,7 @@ class AccountMove(models.Model):
     _inherit = 'account.move'
 
     bank_amount_signed = fields.Monetary(
-        string='Amount',
+        string='Bank Amount (Signed)',
         compute='_compute_bank_amount_signed',
         currency_field='currency_id',
         store=True,

@@ -325,7 +325,7 @@ class LocalPurchaseRequisitionLine(models.Model):
         domain="[('product_tmpl_id', '=', product_tmpl_id)]",
     )
     part_number = fields.Char(
-        string='Part Number',
+        string='Part Number Code',
         compute='_compute_part_number',
         store=True,
         readonly=False,

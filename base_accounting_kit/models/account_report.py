@@ -31,6 +31,9 @@ class AccountCommonReport(models.Model):
     company_id = fields.Many2one('res.company', string='Company',
                                  required=True, readonly=True,
                                  default=lambda self: self.env.company)
+    # Core account.report labels this boolean "Journals" too; relabel it so it
+    # does not clash with the journal_ids selection used by the report wizards.
+    filter_journals = fields.Boolean(string="Journal Filter")
     journal_ids = fields.Many2many(
         comodel_name='account.journal',
         string='Journals',

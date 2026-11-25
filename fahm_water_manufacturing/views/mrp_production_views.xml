@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="mrp_production_form_view_fahm_water" model="ir.ui.view">
+        <field name="name">mrp.production.form.fahm.water</field>
+        <field name="model">mrp.production</field>
+        <field name="inherit_id" ref="mrp.mrp_production_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header/button[@name='action_confirm']" position="after">
+                <button name="action_fahm_create_qc_check" type="object" string="Create QC Check"
+                        invisible="not fahm_qc_required or state in ('draft', 'done', 'cancel') or fahm_qc_state == 'passed'"/>
+            </xpath>
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_fahm_view_qc_checks" type="object" class="oe_stat_button" icon="fa-flask"
+                        invisible="fahm_qc_check_count == 0">
+                    <div class="o_field_widget o_stat_info">
+                        <span class="o_stat_value"><field name="fahm_qc_check_count"/></span>
+                        <span class="o_stat_text">QC Checks</span>
+                    </div>
+                </button>
+            </xpath>
+            <xpath expr="//sheet" position="before">
+                <div class="alert alert-warning mb-0" role="alert"
+                     invisible="not fahm_qc_required or fahm_qc_state in ('passed', 'not_required') or state in ('draft', 'done', 'cancel')">
+                    <field name="fahm_qc_state" invisible="1"/>
+                    <field name="fahm_qc_required" invisible="1"/>
+                    <span invisible="fahm_qc_state != 'pending'">This batch needs a passed QC check before it can be produced.</span>
+                    <span invisible="fahm_qc_state != 'failed'">The last QC check of this batch failed. Production cannot be closed.</span>
+                </div>
+            </xpath>
+            <xpath expr="//group[@name='group_extra_info']/field[@name='user_id']" position="after">
+                <field name="fahm_line_id" readonly="state in ('done', 'cancel')"
+                       options="{'no_create': True}"/>
+                <field name="fahm_shift_id" readonly="state in ('done', 'cancel')"
+                       options="{'no_create': True}"/>
+                <field name="fahm_operator_ids" widget="many2many_avatar_user"
+                       readonly="state in ('done', 'cancel')"/>
+                <field name="fahm_qc_state" widget="badge" invisible="fahm_qc_state == 'not_required'"
+                       decoration-success="fahm_qc_state == 'passed'"
+                       decoration-danger="fahm_qc_state == 'failed'"
+                       decoration-warning="fahm_qc_state == 'pending'"/>
+                <field name="fahm_liters_produced" invisible="state != 'done' or not fahm_liters_produced"/>
+                <field name="fahm_reject_qty" invisible="not fahm_reject_qty"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="mrp_production_tree_view_fahm_water" model="ir.ui.view">
+        <field name="name">mrp.production.list.fahm.water</field>
+        <field name="model">mrp.production</field>
+        <field name="inherit_id" ref="mrp.mrp_production_tree_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='product_id']" position="after">
+                <field name="fahm_line_id" optional="show"/>
+                <field name="fahm_shift_id" optional="show"/>
+                <field name="fahm_qc_state" widget="badge" optional="show"
+                       decoration-success="fahm_qc_state == 'passed'"
+                       decoration-danger="fahm_qc_state == 'failed'"
+                       decoration-warning="fahm_qc_state == 'pending'"/>
+                <field name="fahm_liters_produced" optional="hide" sum="Total Litres"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_mrp_production_filter_fahm_water" model="ir.ui.view">
+        <field name="name">mrp.production.search.fahm.water</field>
+        <field name="model">mrp.production</field>
+        <field name="inherit_id" ref="mrp.view_mrp_production_filter"/>
+        <field name="arch" type="xml">
+            <xpath expr="//filter[@name='filter_done']" position="after">
+                <separator/>
+                <filter string="QC Pending" name="fahm_qc_pending" domain="[('fahm_qc_state', '=', 'pending')]"/>
+                <filter string="QC Failed" name="fahm_qc_failed" domain="[('fahm_qc_state', '=', 'failed')]"/>
+                <separator/>
+            </xpath>
+            <xpath expr="//filter[@name='product']" position="after">
+                <filter string="Production Line" name="groupby_fahm_line" context="{'group_by': 'fahm_line_id'}"/>
+                <filter string="Shift" name="groupby_fahm_shift" context="{'group_by': 'fahm_shift_id'}"/>
+                <filter string="QC Status" name="groupby_fahm_qc_state" context="{'group_by': 'fahm_qc_state'}"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="action_fahm_water_production" model="ir.actions.act_window">
+        <field name="name">Water Production Orders</field>
+        <field name="res_model">mrp.production</field>
+        <field name="view_mode">list,kanban,form,calendar,pivot,graph</field>
+        <field name="search_view_id" ref="mrp.view_mrp_production_filter"/>
+        <field name="domain">[('product_id.fahm_water_type', '=', 'finished_water')]</field>
+        <field name="context">{'search_default_todo': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Plan a water production run</p>
+            <p>Create a manufacturing order for a finished water product and choose the line and shift.</p>
+        </field>
+    </record>
+</odoo>

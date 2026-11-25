@@ -1,0 +1,14 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_water_source_user,water.source.user,model_fahm_water_source,mrp.group_mrp_user,1,0,0,0
+access_water_source_manager,water.source.manager,model_fahm_water_source,mrp.group_mrp_manager,1,1,1,1
+access_water_source_qc_manager,water.source.qc.manager,model_fahm_water_source,group_water_qc_manager,1,1,1,1
+access_production_shift_user,production.shift.user,model_fahm_production_shift,mrp.group_mrp_user,1,0,0,0
+access_production_shift_manager,production.shift.manager,model_fahm_production_shift,mrp.group_mrp_manager,1,1,1,1
+access_qc_parameter_user,qc.parameter.user,model_fahm_water_qc_parameter,mrp.group_mrp_user,1,0,0,0
+access_qc_parameter_manager,qc.parameter.manager,model_fahm_water_qc_parameter,group_water_qc_manager,1,1,1,1
+access_qc_check_user,qc.check.user,model_fahm_water_qc_check,mrp.group_mrp_user,1,0,1,0
+access_qc_check_inspector,qc.check.inspector,model_fahm_water_qc_check,group_water_qc_inspector,1,1,1,0
+access_qc_check_manager,qc.check.manager,model_fahm_water_qc_check,group_water_qc_manager,1,1,1,1
+access_qc_check_line_user,qc.check.line.user,model_fahm_water_qc_check_line,mrp.group_mrp_user,1,0,1,0
+access_qc_check_line_inspector,qc.check.line.inspector,model_fahm_water_qc_check_line,group_water_qc_inspector,1,1,1,1
+access_production_report_user,production.report.user,model_fahm_water_production_report,mrp.group_mrp_user,1,0,0,0

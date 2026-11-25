@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="mrp_workcenter_view_fahm_water" model="ir.ui.view">
+        <field name="name">mrp.workcenter.form.fahm.water</field>
+        <field name="model">mrp.workcenter</field>
+        <field name="inherit_id" ref="mrp.mrp_workcenter_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='code']" position="after">
+                <field name="fahm_is_water_line"/>
+                <field name="fahm_line_type" invisible="not fahm_is_water_line" required="fahm_is_water_line"/>
+                <field name="fahm_rated_capacity" invisible="not fahm_is_water_line"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="action_fahm_water_lines" model="ir.actions.act_window">
+        <field name="name">Production Lines</field>
+        <field name="res_model">mrp.workcenter</field>
+        <field name="view_mode">list,kanban,form</field>
+        <field name="domain">[('fahm_is_water_line', '=', True)]</field>
+        <field name="context">{'default_fahm_is_water_line': True}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Create a production line</p>
+            <p>Bottle filling lines, 20 L jar lines, blow moulding and treatment units.</p>
+        </field>
+    </record>
+</odoo>
