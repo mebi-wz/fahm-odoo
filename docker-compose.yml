@@ -13,9 +13,9 @@ services:
       - db19
 
     ports:
-      # Public on the server IP until a subdomain is set up: http://<server-ip>:8096
-      # Once DNS exists, change back to "127.0.0.1:8096:8069" and use deploy/apache/fahm.webims.digital.conf.
-      - "0.0.0.0:8096:8069"
+      # Only reachable from the server itself. Users go through Nginx:
+      # http://<server-ip>:8098 (deploy/nginx/fahm-odoo.conf).
+      - "127.0.0.1:8096:8069"
       - "127.0.0.1:8097:8072"
 
     volumes:
