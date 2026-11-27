@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_local_purchase_requisition_form_fahm_water" model="ir.ui.view">
+        <field name="name">local.purchase.requisition.form.fahm.water</field>
+        <field name="model">local.purchase.requisition</field>
+        <field name="inherit_id" ref="procurement_local_purchase.view_local_purchase_requisition_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='store_requisition_id']" position="after">
+                <field name="fahm_source_reference" invisible="not fahm_source_reference"/>
+                <field name="fahm_material_request_id" invisible="not fahm_material_request_id"
+                       groups="mrp.group_mrp_user,stock.group_stock_user"/>
+                <field name="fahm_production_id" invisible="not fahm_production_id"
+                       groups="mrp.group_mrp_user"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

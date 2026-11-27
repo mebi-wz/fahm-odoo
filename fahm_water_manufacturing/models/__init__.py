@@ -9,5 +9,6 @@ from . import qc_check
 from . import water_treatment
 from . import material_request
 from . import production_stage
+from . import fg_handover
 from . import mrp_production
 from . import production_report

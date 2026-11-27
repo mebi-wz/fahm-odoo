@@ -51,4 +51,10 @@
         <field name="model_id" ref="model_fahm_material_request"/>
         <field name="domain_force">[('company_id', 'in', company_ids)]</field>
     </record>
+
+    <record id="rule_fg_handover_company" model="ir.rule">
+        <field name="name">Finished goods handover: multi-company</field>
+        <field name="model_id" ref="model_fahm_fg_handover"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
 </odoo>

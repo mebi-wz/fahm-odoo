@@ -3,6 +3,16 @@ from odoo.exceptions import UserError, ValidationError
 from odoo.tests import Form, TransactionCase, tagged
 
 
+def _create_product(env, vals):
+    """Create a test product with a unique code (some installed modules require
+    a product code and part number on every product)."""
+    code = "T-" + vals["name"].upper().replace(" ", "-")
+    vals = dict(vals, default_code=code)
+    if "part_number" in env["product.product"]._fields:
+        vals["part_number"] = code
+    return env["product.product"].create(vals)
+
+
 @tagged("post_install", "-at_install")
 class TestWaterManufacturing(TransactionCase):
 
@@ -14,14 +24,14 @@ class TestWaterManufacturing(TransactionCase):
         cls.warehouse._fahm_ensure_water_setup()
         cls.stock_location = cls.warehouse.lot_stock_id
         cls.litre = cls.env.ref("uom.product_uom_litre")
-        cls.preform = cls.env["product.product"].create({
+        cls.preform = _create_product(cls.env, {
             "name": "Test Preform", "is_storable": True, "fahm_water_type": "preform",
         })
-        cls.treated_water = cls.env["product.product"].create({
+        cls.treated_water = _create_product(cls.env, {
             "name": "Test Treated Water", "is_storable": True, "uom_id": cls.litre.id,
             "fahm_water_type": "treated_water", "fahm_volume_per_unit": 1,
         })
-        cls.water = cls.env["product.product"].create({
+        cls.water = _create_product(cls.env, {
             "name": "Test Water 0.5 L x 24",
             "is_storable": True,
             "fahm_water_type": "finished_water",
@@ -279,3 +289,70 @@ class TestWaterManufacturing(TransactionCase):
         self.assertEqual(mo.fahm_qc_state, "failed")
         with self.assertRaises(UserError):
             mo.button_mark_done()
+
+    # ------------------------------------------------------------------ finished goods handover
+    def test_finished_goods_handover_to_store(self):
+        staging = self.warehouse.fahm_fg_location_id
+        stock = self.warehouse.lot_stock_id
+        mo = self._create_mo(qty=5)
+        self.assertEqual(mo.location_dest_id, staging)
+        self._issue_materials(mo)
+        self._run_stages(mo, packs=5)
+        self._pass_qc(mo)
+        stock_before = self.water.with_context(location=stock.id).qty_available
+        mo.button_mark_done()
+        self.assertEqual(self.water.with_context(location=staging.id).qty_available, 5)
+        self.assertEqual(mo.fahm_handover_state, "to_hand_over")
+        self.assertEqual(mo.fahm_step, "handover")
+
+        handover = self.env["fahm.fg.handover"].browse(mo.action_fahm_handover()["res_id"])
+        self.assertAlmostEqual(sum(handover.line_ids.mapped("quantity")), 5)
+        handover.action_submit()
+        self.assertEqual(mo.fahm_handover_state, "submitted")
+        picking = handover.picking_ids
+        self.assertEqual(picking.location_id, staging)
+        self.assertEqual(picking.location_dest_id, stock)
+        picking.button_validate()
+        self.assertEqual(handover.state, "received")
+        self.assertEqual(mo.fahm_handover_state, "received")
+        self.assertEqual(mo.fahm_step, "done")
+        self.assertEqual(self.water.with_context(location=staging.id).qty_available, 0)
+        self.assertAlmostEqual(self.water.with_context(location=stock.id).qty_available - stock_before, 5)
+
+    # ------------------------------------------------------------------ top-up when more is produced
+    def test_overproduction_requests_more_materials(self):
+        mo = self._create_mo(qty=1)
+        first = self._issue_materials(mo)
+        self.assertFalse(mo.fahm_materials_short)
+        mo._fahm_load_stages()
+        stages = mo.fahm_stage_line_ids
+        for line in stages:
+            line.action_start()
+            line.qty_good = 3 if line.is_final else 72
+            line.action_finish()
+        # 3 packs produced while 1 was planned: components for 2 more packs are missing
+        self.assertEqual(mo.qty_producing, 3)
+        self.assertTrue(mo.fahm_materials_short)
+        self.assertEqual(mo.fahm_material_state, "issued", "A top-up must not send the order back")
+
+        topup = self.env["fahm.material.request"].browse(mo.action_fahm_request_materials()["res_id"])
+        self.assertNotEqual(topup, first)
+        self.assertEqual(
+            {(l.product_id, l.qty_requested) for l in topup.line_ids},
+            {(self.preform, 48), (self.treated_water, 24)},
+        )
+        self.assertEqual(mo.fahm_material_state, "issued")
+        self.assertFalse(mo.fahm_materials_short, "No second top-up while one is open")
+        topup.action_submit()
+        topup.action_approve()
+        topup.action_issue()
+        for picking in topup.picking_ids:
+            picking.move_ids.picked = True
+            picking.button_validate()
+        self.assertEqual(topup.state, "issued")
+        mo.action_assign()
+        self.assertFalse(mo.fahm_materials_short)
+        self._pass_qc(mo)
+        # producing more than planned asks the user to confirm the extra consumption
+        mo.with_context(skip_consumption=True, skip_backorder=True).button_mark_done()
+        self.assertEqual(mo.state, "done")

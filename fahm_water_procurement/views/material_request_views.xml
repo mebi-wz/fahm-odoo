@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_fahm_material_request_form_procurement" model="ir.ui.view">
+        <field name="name">fahm.material.request.form.procurement</field>
+        <field name="model">fahm.material.request</field>
+        <field name="inherit_id" ref="fahm_water_manufacturing.view_fahm_material_request_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header/button[@name='action_issue']" position="after">
+                <field name="can_purchase" invisible="1"/>
+                <button name="action_create_purchase_request" type="object"
+                        string="Create Purchase Request" class="btn-warning"
+                        invisible="not has_shortage or not can_purchase"/>
+            </xpath>
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_view_purchase_requests" type="object" class="oe_stat_button"
+                        icon="fa-shopping-cart" invisible="purchase_request_count == 0 or not can_purchase">
+                    <field name="purchase_request_count" widget="statinfo" string="Purchase Requests"/>
+                </button>
+            </xpath>
+            <xpath expr="//div[hasclass('oe_title')]" position="before">
+                <field name="has_shortage" invisible="1"/>
+                <div class="alert alert-warning mb-3" role="alert" invisible="not has_shortage">
+                    Some materials are not available in store (rows in red).
+                    <span invisible="not can_purchase">Click <b>Create Purchase Request</b> to ask procurement to buy the missing quantity.</span>
+                    <span invisible="can_purchase">Ask the store keeper or procurement to raise a purchase request for the missing quantity.</span>
+                    For treated water, record a water treatment batch instead.
+                    <span invisible="purchase_request_count == 0">A purchase request has already been created.</span>
+                </div>
+            </xpath>
+            <xpath expr="//field[@name='line_ids']/list" position="attributes">
+                <attribute name="decoration-danger">is_short and parent.state in ('draft', 'submitted', 'approved', 'issuing')</attribute>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_fahm_material_request_list_procurement" model="ir.ui.view">
+        <field name="name">fahm.material.request.list.procurement</field>
+        <field name="model">fahm.material.request</field>
+        <field name="inherit_id" ref="fahm_water_manufacturing.view_fahm_material_request_list"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='state']" position="before">
+                <field name="purchase_request_count" string="Purchase Req." optional="show"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

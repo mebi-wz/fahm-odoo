@@ -1,0 +1,409 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Sample Fahm water products, bills of materials, lines and water source.
+    Loaded on module install/upgrade. noupdate="1": once created, later upgrades do not
+    overwrite your changes (names, quantities, prices), and deleted records are not recreated.
+    Quantities are starting points: adjust them to your supplier specifications.
+-->
+<odoo noupdate="1">
+
+    <!-- Product categories -->
+    <record id="categ_water" model="product.category">
+        <field name="name">Water Plant</field>
+    </record>
+    <record id="categ_water_raw" model="product.category">
+        <field name="name">Raw Materials</field>
+        <field name="parent_id" ref="categ_water"/>
+    </record>
+    <record id="categ_water_pack" model="product.category">
+        <field name="name">Packaging</field>
+        <field name="parent_id" ref="categ_water"/>
+    </record>
+    <record id="categ_water_fg" model="product.category">
+        <field name="name">Finished Goods</field>
+        <field name="parent_id" ref="categ_water"/>
+    </record>
+
+    <!-- Raw materials and packaging -->
+    <record id="sample_treated_water" model="product.product">
+        <field name="name">Treated Water</field>
+        <field name="default_code">FW-RM-TW</field>
+        <field name="type">consu</field>
+        <field name="is_storable" eval="True"/>
+        <field name="sale_ok" eval="False"/>
+        <field name="categ_id" ref="categ_water_raw"/>
+        <field name="uom_id" ref="uom.product_uom_litre"/>
+        <field name="fahm_water_type">treated_water</field>
+        <field name="fahm_volume_per_unit">1</field>
+    </record>
+    <record id="sample_preform_10" model="product.product">
+        <field name="name">PET Preform 10 g – 28 mm (0.33 L)</field>
+        <field name="default_code">FW-PF-10</field>
+        <field name="type">consu</field>
+        <field name="is_storable" eval="True"/>
+        <field name="sale_ok" eval="False"/>
+        <field name="categ_id" ref="categ_water_pack"/>
+        <field name="uom_id" ref="uom.product_uom_unit"/>
+        <field name="fahm_water_type">preform</field>
+    </record>
+    <record id="sample_preform_12" model="product.product">
+        <field name="name">PET Preform 12.5 g – 28 mm (0.5 L)</field>
+        <field name="default_code">FW-PF-12</field>
+        <field name="type">consu</field>
+        <field name="is_storable" eval="True"/>
+        <field name="sale_ok" eval="False"/>
+        <field name="categ_id" ref="categ_water_pack"/>
+        <field name="uom_id" ref="uom.product_uom_unit"/>
+        <field name="fahm_water_type">preform</field>
+    </record>
+    <record id="sample_preform_23" model="product.product">
+        <field name="name">PET Preform 23 g – 28 mm (1 L)</field>
+        <field name="default_code">FW-PF-23</field>
+        <field name="type">consu</field>
+        <field name="is_storable" eval="True"/>
+        <field name="sale_ok" eval="False"/>
+        <field name="categ_id" ref="categ_water_pack"/>
+        <field name="uom_id" ref="uom.product_uom_unit"/>
+        <field name="fahm_water_type">preform</field>
+    </record>
+    <record id="sample_preform_28" model="product.product">
+        <field name="name">PET Preform 28 g – 28 mm (1.5 L)</field>
+        <field name="default_code">FW-PF-28</field>
+        <field name="type">consu</field>
+        <field name="is_storable" eval="True"/>
+        <field name="sale_ok" eval="False"/>
+        <field name="categ_id" ref="categ_water_pack"/>
+        <field name="uom_id" ref="uom.product_uom_unit"/>
+        <field name="fahm_water_type">preform</field>
+    </record>
+    <record id="sample_preform_80" model="product.product">
+        <field name="name">PET Preform 80 g – 48 mm (5 L)</field>
+        <field name="default_code">FW-PF-80</field>
+        <field name="type">consu</field>
+        <field name="is_storable" eval="True"/>
+        <field name="sale_ok" eval="False"/>
+        <field name="categ_id" ref="categ_water_pack"/>
+        <field name="uom_id" ref="uom.product_uom_unit"/>
+        <field name="fahm_water_type">preform</field>
+    </record>
+    <record id="sample_cap_28" model="product.product">
+        <field name="name">Cap 28 mm</field>
+        <field name="default_code">FW-CP-28</field>
+        <field name="type">consu</field>
+        <field name="is_storable" eval="True"/>
+        <field name="sale_ok" eval="False"/>
+        <field name="categ_id" ref="categ_water_pack"/>
+        <field name="uom_id" ref="uom.product_uom_unit"/>
+        <field name="fahm_water_type">cap</field>
+    </record>
+    <record id="sample_cap_48" model="product.product">
+        <field name="name">Cap 48 mm with Handle (5 L)</field>
+        <field name="default_code">FW-CP-48</field>
+        <field name="type">consu</field>
+        <field name="is_storable" eval="True"/>
+        <field name="sale_ok" eval="False"/>
+        <field name="categ_id" ref="categ_water_pack"/>
+        <field name="uom_id" ref="uom.product_uom_unit"/>
+        <field name="fahm_water_type">cap</field>
+    </record>
+    <record id="sample_cap_55" model="product.product">
+        <field name="name">Cap 55 mm Non-Spill (20 L Jar)</field>
+        <field name="default_code">FW-CP-55</field>
+        <field name="type">consu</field>
+        <field name="is_storable" eval="True"/>
+        <field name="sale_ok" eval="False"/>
+        <field name="categ_id" ref="categ_water_pack"/>
+        <field name="uom_id" ref="uom.product_uom_unit"/>
+        <field name="fahm_water_type">cap</field>
+    </record>
+    <record id="sample_label_033" model="product.product">
+        <field name="name">Label Fahm 0.33 L</field>
+        <field name="default_code">FW-LB-033</field>
+        <field name="type">consu</field>
+        <field name="is_storable" eval="True"/>
+        <field name="sale_ok" eval="False"/>
+        <field name="categ_id" ref="categ_water_pack"/>
+        <field name="uom_id" ref="uom.product_uom_unit"/>
+        <field name="fahm_water_type">label</field>
+    </record>
+    <record id="sample_label_05" model="product.product">
+        <field name="name">Label Fahm 0.5 L</field>
+        <field name="default_code">FW-LB-050</field>
+        <field name="type">consu</field>
+        <field name="is_storable" eval="True"/>
+        <field name="sale_ok" eval="False"/>
+        <field name="categ_id" ref="categ_water_pack"/>
+        <field name="uom_id" ref="uom.product_uom_unit"/>
+        <field name="fahm_water_type">label</field>
+    </record>
+    <record id="sample_label_1" model="product.product">
+        <field name="name">Label Fahm 1 L</field>
+        <field name="default_code">FW-LB-100</field>
+        <field name="type">consu</field>
+        <field name="is_storable" eval="True"/>
+        <field name="sale_ok" eval="False"/>
+        <field name="categ_id" ref="categ_water_pack"/>
+        <field name="uom_id" ref="uom.product_uom_unit"/>
+        <field name="fahm_water_type">label</field>
+    </record>
+    <record id="sample_label_15" model="product.product">
+        <field name="name">Label Fahm 1.5 L</field>
+        <field name="default_code">FW-LB-150</field>
+        <field name="type">consu</field>
+        <field name="is_storable" eval="True"/>
+        <field name="sale_ok" eval="False"/>
+        <field name="categ_id" ref="categ_water_pack"/>
+        <field name="uom_id" ref="uom.product_uom_unit"/>
+        <field name="fahm_water_type">label</field>
+    </record>
+    <record id="sample_label_5" model="product.product">
+        <field name="name">Label Fahm 5 L</field>
+        <field name="default_code">FW-LB-500</field>
+        <field name="type">consu</field>
+        <field name="is_storable" eval="True"/>
+        <field name="sale_ok" eval="False"/>
+        <field name="categ_id" ref="categ_water_pack"/>
+        <field name="uom_id" ref="uom.product_uom_unit"/>
+        <field name="fahm_water_type">label</field>
+    </record>
+    <record id="sample_label_20" model="product.product">
+        <field name="name">Label Fahm 20 L Jar</field>
+        <field name="default_code">FW-LB-2000</field>
+        <field name="type">consu</field>
+        <field name="is_storable" eval="True"/>
+        <field name="sale_ok" eval="False"/>
+        <field name="categ_id" ref="categ_water_pack"/>
+        <field name="uom_id" ref="uom.product_uom_unit"/>
+        <field name="fahm_water_type">label</field>
+    </record>
+    <record id="sample_neck_seal_20" model="product.product">
+        <field name="name">Neck Shrink Seal 20 L Jar</field>
+        <field name="default_code">FW-LB-NS20</field>
+        <field name="type">consu</field>
+        <field name="is_storable" eval="True"/>
+        <field name="sale_ok" eval="False"/>
+        <field name="categ_id" ref="categ_water_pack"/>
+        <field name="uom_id" ref="uom.product_uom_unit"/>
+        <field name="fahm_water_type">label</field>
+    </record>
+    <record id="sample_shrink_film" model="product.product">
+        <field name="name">Shrink Film LDPE</field>
+        <field name="default_code">FW-SF-LDPE</field>
+        <field name="type">consu</field>
+        <field name="is_storable" eval="True"/>
+        <field name="sale_ok" eval="False"/>
+        <field name="categ_id" ref="categ_water_pack"/>
+        <field name="uom_id" ref="uom.product_uom_kgm"/>
+        <field name="fahm_water_type">shrink_film</field>
+    </record>
+    <record id="sample_jar_20" model="product.product">
+        <field name="name">20 L Jar (Returnable)</field>
+        <field name="default_code">FW-JR-20</field>
+        <field name="type">consu</field>
+        <field name="is_storable" eval="True"/>
+        <field name="sale_ok" eval="False"/>
+        <field name="categ_id" ref="categ_water_pack"/>
+        <field name="uom_id" ref="uom.product_uom_unit"/>
+        <field name="fahm_water_type">jar</field>
+    </record>
+
+    <!-- Finished products: lot tracked with best-before date, QC release required -->
+    <record id="sample_water_033x24" model="product.product">
+        <field name="name">Fahm Water 0.33 L × 24</field>
+        <field name="default_code">FW-FG-033-24</field>
+        <field name="type">consu</field>
+        <field name="is_storable" eval="True"/>
+        <field name="sale_ok" eval="True"/>
+        <field name="purchase_ok" eval="False"/>
+        <field name="categ_id" ref="categ_water_fg"/>
+        <field name="uom_id" ref="uom.product_uom_unit"/>
+        <field name="tracking">lot</field>
+        <field name="use_expiration_date" eval="True"/>
+        <field name="expiration_time">365</field>
+        <field name="fahm_water_type">finished_water</field>
+        <field name="fahm_volume_per_unit">7.92</field>
+        <field name="fahm_units_per_pack">24</field>
+        <field name="fahm_qc_required" eval="True"/>
+    </record>
+    <record id="sample_water_05x24" model="product.product">
+        <field name="name">Fahm Water 0.5 L × 24</field>
+        <field name="default_code">FW-FG-050-24</field>
+        <field name="type">consu</field>
+        <field name="is_storable" eval="True"/>
+        <field name="sale_ok" eval="True"/>
+        <field name="purchase_ok" eval="False"/>
+        <field name="categ_id" ref="categ_water_fg"/>
+        <field name="uom_id" ref="uom.product_uom_unit"/>
+        <field name="tracking">lot</field>
+        <field name="use_expiration_date" eval="True"/>
+        <field name="expiration_time">365</field>
+        <field name="fahm_water_type">finished_water</field>
+        <field name="fahm_volume_per_unit">12</field>
+        <field name="fahm_units_per_pack">24</field>
+        <field name="fahm_qc_required" eval="True"/>
+    </record>
+    <record id="sample_water_1x12" model="product.product">
+        <field name="name">Fahm Water 1 L × 12</field>
+        <field name="default_code">FW-FG-100-12</field>
+        <field name="type">consu</field>
+        <field name="is_storable" eval="True"/>
+        <field name="sale_ok" eval="True"/>
+        <field name="purchase_ok" eval="False"/>
+        <field name="categ_id" ref="categ_water_fg"/>
+        <field name="uom_id" ref="uom.product_uom_unit"/>
+        <field name="tracking">lot</field>
+        <field name="use_expiration_date" eval="True"/>
+        <field name="expiration_time">365</field>
+        <field name="fahm_water_type">finished_water</field>
+        <field name="fahm_volume_per_unit">12</field>
+        <field name="fahm_units_per_pack">12</field>
+        <field name="fahm_qc_required" eval="True"/>
+    </record>
+    <record id="sample_water_15x6" model="product.product">
+        <field name="name">Fahm Water 1.5 L × 6</field>
+        <field name="default_code">FW-FG-150-06</field>
+        <field name="type">consu</field>
+        <field name="is_storable" eval="True"/>
+        <field name="sale_ok" eval="True"/>
+        <field name="purchase_ok" eval="False"/>
+        <field name="categ_id" ref="categ_water_fg"/>
+        <field name="uom_id" ref="uom.product_uom_unit"/>
+        <field name="tracking">lot</field>
+        <field name="use_expiration_date" eval="True"/>
+        <field name="expiration_time">365</field>
+        <field name="fahm_water_type">finished_water</field>
+        <field name="fahm_volume_per_unit">9</field>
+        <field name="fahm_units_per_pack">6</field>
+        <field name="fahm_qc_required" eval="True"/>
+    </record>
+    <record id="sample_water_5x2" model="product.product">
+        <field name="name">Fahm Water 5 L × 2</field>
+        <field name="default_code">FW-FG-500-02</field>
+        <field name="type">consu</field>
+        <field name="is_storable" eval="True"/>
+        <field name="sale_ok" eval="True"/>
+        <field name="purchase_ok" eval="False"/>
+        <field name="categ_id" ref="categ_water_fg"/>
+        <field name="uom_id" ref="uom.product_uom_unit"/>
+        <field name="tracking">lot</field>
+        <field name="use_expiration_date" eval="True"/>
+        <field name="expiration_time">365</field>
+        <field name="fahm_water_type">finished_water</field>
+        <field name="fahm_volume_per_unit">10</field>
+        <field name="fahm_units_per_pack">2</field>
+        <field name="fahm_qc_required" eval="True"/>
+    </record>
+    <record id="sample_water_20_refill" model="product.product">
+        <field name="name">Fahm Water 20 L Jar (Refill)</field>
+        <field name="default_code">FW-FG-2000-RF</field>
+        <field name="type">consu</field>
+        <field name="is_storable" eval="True"/>
+        <field name="sale_ok" eval="True"/>
+        <field name="purchase_ok" eval="False"/>
+        <field name="categ_id" ref="categ_water_fg"/>
+        <field name="uom_id" ref="uom.product_uom_unit"/>
+        <field name="tracking">lot</field>
+        <field name="use_expiration_date" eval="True"/>
+        <field name="expiration_time">90</field>
+        <field name="fahm_water_type">finished_water</field>
+        <field name="fahm_volume_per_unit">20</field>
+        <field name="fahm_units_per_pack">1</field>
+        <field name="fahm_qc_required" eval="True"/>
+    </record>
+
+    <!-- Bills of materials (per 1 pack / jar) -->
+    <record id="sample_bom_water_033x24" model="mrp.bom">
+        <field name="product_tmpl_id" ref="sample_water_033x24_product_template"/>
+        <field name="product_qty">1</field>
+        <field name="type">normal</field>
+        <field name="bom_line_ids" eval="[
+            Command.create({'product_id': ref('sample_treated_water'), 'product_qty': 8.05, 'product_uom_id': ref('uom.product_uom_litre')}),
+            Command.create({'product_id': ref('sample_preform_10'), 'product_qty': 24, 'product_uom_id': ref('uom.product_uom_unit')}),
+            Command.create({'product_id': ref('sample_cap_28'), 'product_qty': 24, 'product_uom_id': ref('uom.product_uom_unit')}),
+            Command.create({'product_id': ref('sample_label_033'), 'product_qty': 24, 'product_uom_id': ref('uom.product_uom_unit')}),
+            Command.create({'product_id': ref('sample_shrink_film'), 'product_qty': 0.045, 'product_uom_id': ref('uom.product_uom_kgm')}),
+        ]"/>
+    </record>
+    <record id="sample_bom_water_05x24" model="mrp.bom">
+        <field name="product_tmpl_id" ref="sample_water_05x24_product_template"/>
+        <field name="product_qty">1</field>
+        <field name="type">normal</field>
+        <field name="bom_line_ids" eval="[
+            Command.create({'product_id': ref('sample_treated_water'), 'product_qty': 12.2, 'product_uom_id': ref('uom.product_uom_litre')}),
+            Command.create({'product_id': ref('sample_preform_12'), 'product_qty': 24, 'product_uom_id': ref('uom.product_uom_unit')}),
+            Command.create({'product_id': ref('sample_cap_28'), 'product_qty': 24, 'product_uom_id': ref('uom.product_uom_unit')}),
+            Command.create({'product_id': ref('sample_label_05'), 'product_qty': 24, 'product_uom_id': ref('uom.product_uom_unit')}),
+            Command.create({'product_id': ref('sample_shrink_film'), 'product_qty': 0.055, 'product_uom_id': ref('uom.product_uom_kgm')}),
+        ]"/>
+    </record>
+    <record id="sample_bom_water_1x12" model="mrp.bom">
+        <field name="product_tmpl_id" ref="sample_water_1x12_product_template"/>
+        <field name="product_qty">1</field>
+        <field name="type">normal</field>
+        <field name="bom_line_ids" eval="[
+            Command.create({'product_id': ref('sample_treated_water'), 'product_qty': 12.2, 'product_uom_id': ref('uom.product_uom_litre')}),
+            Command.create({'product_id': ref('sample_preform_23'), 'product_qty': 12, 'product_uom_id': ref('uom.product_uom_unit')}),
+            Command.create({'product_id': ref('sample_cap_28'), 'product_qty': 12, 'product_uom_id': ref('uom.product_uom_unit')}),
+            Command.create({'product_id': ref('sample_label_1'), 'product_qty': 12, 'product_uom_id': ref('uom.product_uom_unit')}),
+            Command.create({'product_id': ref('sample_shrink_film'), 'product_qty': 0.045, 'product_uom_id': ref('uom.product_uom_kgm')}),
+        ]"/>
+    </record>
+    <record id="sample_bom_water_15x6" model="mrp.bom">
+        <field name="product_tmpl_id" ref="sample_water_15x6_product_template"/>
+        <field name="product_qty">1</field>
+        <field name="type">normal</field>
+        <field name="bom_line_ids" eval="[
+            Command.create({'product_id': ref('sample_treated_water'), 'product_qty': 9.15, 'product_uom_id': ref('uom.product_uom_litre')}),
+            Command.create({'product_id': ref('sample_preform_28'), 'product_qty': 6, 'product_uom_id': ref('uom.product_uom_unit')}),
+            Command.create({'product_id': ref('sample_cap_28'), 'product_qty': 6, 'product_uom_id': ref('uom.product_uom_unit')}),
+            Command.create({'product_id': ref('sample_label_15'), 'product_qty': 6, 'product_uom_id': ref('uom.product_uom_unit')}),
+            Command.create({'product_id': ref('sample_shrink_film'), 'product_qty': 0.035, 'product_uom_id': ref('uom.product_uom_kgm')}),
+        ]"/>
+    </record>
+    <record id="sample_bom_water_5x2" model="mrp.bom">
+        <field name="product_tmpl_id" ref="sample_water_5x2_product_template"/>
+        <field name="product_qty">1</field>
+        <field name="type">normal</field>
+        <field name="bom_line_ids" eval="[
+            Command.create({'product_id': ref('sample_treated_water'), 'product_qty': 10.1, 'product_uom_id': ref('uom.product_uom_litre')}),
+            Command.create({'product_id': ref('sample_preform_80'), 'product_qty': 2, 'product_uom_id': ref('uom.product_uom_unit')}),
+            Command.create({'product_id': ref('sample_cap_48'), 'product_qty': 2, 'product_uom_id': ref('uom.product_uom_unit')}),
+            Command.create({'product_id': ref('sample_label_5'), 'product_qty': 2, 'product_uom_id': ref('uom.product_uom_unit')}),
+            Command.create({'product_id': ref('sample_shrink_film'), 'product_qty': 0.03, 'product_uom_id': ref('uom.product_uom_kgm')}),
+        ]"/>
+    </record>
+    <record id="sample_bom_water_20_refill" model="mrp.bom">
+        <field name="product_tmpl_id" ref="sample_water_20_refill_product_template"/>
+        <field name="product_qty">1</field>
+        <field name="type">normal</field>
+        <field name="bom_line_ids" eval="[
+            Command.create({'product_id': ref('sample_treated_water'), 'product_qty': 20.1, 'product_uom_id': ref('uom.product_uom_litre')}),
+            Command.create({'product_id': ref('sample_cap_55'), 'product_qty': 1, 'product_uom_id': ref('uom.product_uom_unit')}),
+            Command.create({'product_id': ref('sample_label_20'), 'product_qty': 1, 'product_uom_id': ref('uom.product_uom_unit')}),
+            Command.create({'product_id': ref('sample_neck_seal_20'), 'product_qty': 1, 'product_uom_id': ref('uom.product_uom_unit')}),
+        ]"/>
+    </record>
+
+    <!-- Production lines -->
+    <record id="sample_line_bottle" model="mrp.workcenter">
+        <field name="name">Bottle Line 1</field>
+        <field name="code">BL1</field>
+        <field name="fahm_is_water_line" eval="True"/>
+        <field name="fahm_line_type">bottle</field>
+        <field name="fahm_rated_capacity">6000</field>
+    </record>
+    <record id="sample_line_jar" model="mrp.workcenter">
+        <field name="name">20 L Jar Line</field>
+        <field name="code">JL1</field>
+        <field name="fahm_is_water_line" eval="True"/>
+        <field name="fahm_line_type">jar</field>
+        <field name="fahm_rated_capacity">300</field>
+    </record>
+
+    <!-- Water source -->
+    <record id="sample_source_borehole" model="fahm.water.source">
+        <field name="name">Borehole No. 1</field>
+        <field name="code">BH-01</field>
+        <field name="source_type">borehole</field>
+    </record>
+</odoo>

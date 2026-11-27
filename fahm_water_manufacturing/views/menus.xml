@@ -17,6 +17,17 @@
               action="action_fahm_material_request_to_approve"
               groups="mrp.group_mrp_manager"
               sequence="7"/>
+    <menuitem id="menu_fahm_fg_handover"
+              name="Finished Goods Handovers"
+              parent="mrp.menu_mrp_manufacturing"
+              action="action_fahm_fg_handover"
+              sequence="9"/>
+    <menuitem id="menu_fahm_fg_handover_to_receive"
+              name="Finished Goods to Receive"
+              parent="stock.menu_stock_warehouse_mgmt"
+              action="action_fahm_fg_handover_to_receive"
+              groups="stock.group_stock_user"
+              sequence="31"/>
     <menuitem id="menu_fahm_water_treatment"
               name="Water Treatment"
               parent="mrp.menu_mrp_manufacturing"

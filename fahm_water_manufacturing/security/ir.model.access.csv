@@ -23,3 +23,8 @@ access_production_stage_user,production.stage.user,model_fahm_production_stage,m
 access_production_stage_manager,production.stage.manager,model_fahm_production_stage,mrp.group_mrp_manager,1,1,1,1
 access_production_stage_line_user,production.stage.line.user,model_fahm_production_stage_line,mrp.group_mrp_user,1,1,1,0
 access_production_stage_line_manager,production.stage.line.manager,model_fahm_production_stage_line,mrp.group_mrp_manager,1,1,1,1
+access_fg_handover_user,fg.handover.user,model_fahm_fg_handover,mrp.group_mrp_user,1,1,1,0
+access_fg_handover_stock,fg.handover.stock,model_fahm_fg_handover,stock.group_stock_user,1,1,0,0
+access_fg_handover_manager,fg.handover.manager,model_fahm_fg_handover,mrp.group_mrp_manager,1,1,1,1
+access_fg_handover_line_user,fg.handover.line.user,model_fahm_fg_handover_line,mrp.group_mrp_user,1,1,1,1
+access_fg_handover_line_stock,fg.handover.line.stock,model_fahm_fg_handover_line,stock.group_stock_user,1,0,0,0

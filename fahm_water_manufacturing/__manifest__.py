@@ -1,6 +1,6 @@
 {
     "name": "Fahm Water Manufacturing",
-    "version": "19.0.1.1.0",
+    "version": "19.0.1.3.0",
     "category": "Supply Chain/Manufacturing",
     "summary": "Packaged drinking water production: lines, shifts, water quality control and batch release",
     "description": """
@@ -34,6 +34,7 @@ Extends Odoo Manufacturing for a packaged drinking water plant:
         "data/qc_parameter_data.xml",
         "data/scrap_reason_data.xml",
         "data/production_stage_data.xml",
+        "data/sample_products_data.xml",
         "report/qc_certificate_report.xml",
         "views/product_views.xml",
         "views/mrp_workcenter_views.xml",
@@ -44,12 +45,10 @@ Extends Odoo Manufacturing for a packaged drinking water plant:
         "views/water_treatment_views.xml",
         "views/material_request_views.xml",
         "views/production_stage_views.xml",
+        "views/fg_handover_views.xml",
         "views/mrp_production_views.xml",
         "views/production_report_views.xml",
         "views/menus.xml",
-    ],
-    "demo": [
-        "demo/water_demo.xml",
     ],
     "post_init_hook": "post_init_hook",
     "installable": True,

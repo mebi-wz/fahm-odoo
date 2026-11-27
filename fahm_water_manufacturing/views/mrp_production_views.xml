@@ -15,6 +15,12 @@
                 <button name="action_fahm_view_material_requests" type="object" string="Issue Materials"
                         class="oe_highlight" groups="stock.group_stock_user"
                         invisible="fahm_step != 'issue'"/>
+                <field name="fahm_materials_short" invisible="1"/>
+                <field name="fahm_handover_state" invisible="1"/>
+                <button name="action_fahm_request_materials" type="object" string="Request More Materials"
+                        class="btn-warning" invisible="not fahm_materials_short"/>
+                <button name="action_fahm_handover" type="object" string="Hand Over to Store"
+                        class="oe_highlight" invisible="fahm_handover_state != 'to_hand_over'"/>
                 <button name="action_fahm_load_stages" type="object" string="Load Stages"
                         invisible="fahm_step != 'production' or fahm_stage_line_ids"/>
                 <button name="action_fahm_create_qc_check" type="object" string="Create QC Check"
@@ -29,6 +35,13 @@
                         <span class="o_stat_text">Material Requests</span>
                     </div>
                 </button>
+                <button name="action_fahm_view_handovers" type="object" class="oe_stat_button" icon="fa-sign-in"
+                        invisible="fahm_handover_count == 0">
+                    <div class="o_field_widget o_stat_info">
+                        <span class="o_stat_value"><field name="fahm_handover_count"/></span>
+                        <span class="o_stat_text">FG Handovers</span>
+                    </div>
+                </button>
                 <button name="action_fahm_view_qc_checks" type="object" class="oe_stat_button" icon="fa-flask"
                         invisible="fahm_qc_check_count == 0">
                     <div class="o_field_widget o_stat_info">
@@ -40,7 +53,16 @@
             <xpath expr="//sheet" position="before">
                 <div class="px-3 pt-2" invisible="not fahm_step">
                     <field name="fahm_step" widget="statusbar"
-                           statusbar_visible="plan,materials,approval,issue,production,qc,close,done"/>
+                           statusbar_visible="plan,materials,approval,issue,production,qc,close,handover,done"/>
+                </div>
+                <div class="alert alert-warning mb-0" role="alert" invisible="not fahm_materials_short">
+                    This order needs more materials than were issued (for example, more was produced than planned).
+                    Click <b>Request More Materials</b> to ask the store for the missing quantity.
+                </div>
+                <div class="alert alert-info mb-0" role="alert" invisible="fahm_step != 'handover'">
+                    Step 8: the finished goods are in <b>Finished Goods Staging</b>.
+                    <span invisible="fahm_handover_state != 'to_hand_over'">Click <b>Hand Over to Store</b>.</span>
+                    <span invisible="fahm_handover_state != 'submitted'">Waiting for the store to receive them.</span>
                 </div>
                 <div class="alert alert-info mb-0" role="alert" invisible="fahm_step not in ('materials', 'approval', 'issue')">
                     <field name="fahm_material_state" invisible="1"/>

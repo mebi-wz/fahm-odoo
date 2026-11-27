@@ -45,7 +45,12 @@ Each water production order now follows fixed steps, shown as a bar at the top o
 | 4. Store issue | Store keeper | **Issue Materials** creates the transfers to the *Production Floor*: packaging from the store, treated water from the *Treated Water Tank*. The store validates the transfer when the goods are handed over. |
 | 5. Production | Operators | The stages load automatically. Each stage is started and finished in order with good/rejected quantities: bottle line = Blow Moulding → Filling & Capping → Labelling & Coding → Packing; 20 L jar line = Washing & Sanitising → Filling & Capping → Labelling & Coding. The final stage sets the produced quantity. |
 | 6. Quality check | QC inspector | Finished-product QC check; must pass. |
-| 7. Close | Production supervisor | **Produce** consumes the issued materials and puts the finished packs in stock. |
+| 7. Close | Production supervisor | **Produce** consumes the issued materials and puts the finished packs into **Finished Goods Staging**. |
+| 8. Hand over to store | Production → store keeper | **Hand Over to Store** creates a handover (lots and best-before dates) and a transfer from staging to WH/Stock. The store validates it on receipt (*Inventory → Finished Goods to Receive*), and the order is complete. |
+
+**More produced than planned:** when the final stage records more than the planned quantity, the order shows **Request More Materials**. It creates a top-up material request for only what is missing on the production floor, with the same approval and store issue. The order stays in production while the top-up is processed.
+
+**Materials not in store:** materials requested in a larger quantity than the store has are shown in red on the material request. **Create Purchase Request** (module `fahm_water_procurement`) creates a draft *Local Purchase Requisition* for the missing quantities, priced at product cost and linked to the request and the order. Treated water is excluded, because it comes from a water treatment batch. The requisition then follows the normal approvals → RFQ / PO → receipt, and the store issues the materials once they arrive. Users need the *Store Requisition: Requester* role to create it.
 
 The order cannot start before the materials are issued, and it cannot be closed before all stages are finished and QC has passed.
 

@@ -56,6 +56,21 @@ class MrpProduction(models.Model):
         ],
         string="Materials", compute="_compute_fahm_material_state", store=True,
     )
+    fahm_materials_short = fields.Boolean(
+        string="Materials Missing on Floor", compute="_compute_fahm_materials_short",
+        help="The order needs more components than were issued (e.g. more was produced than planned).")
+    fahm_handover_ids = fields.One2many(
+        "fahm.fg.handover", "production_id", string="Finished Goods Handovers")
+    fahm_handover_count = fields.Integer(compute="_compute_fahm_handover_count")
+    fahm_handover_state = fields.Selection(
+        [
+            ("none_needed", "Not Needed"),
+            ("to_hand_over", "To Hand Over"),
+            ("submitted", "Waiting Store Receipt"),
+            ("received", "Received by Store"),
+        ],
+        string="Handover", compute="_compute_fahm_handover_state", store=True,
+    )
     fahm_stage_line_ids = fields.One2many(
         "fahm.production.stage.line", "production_id", string="Production Stages")
     fahm_step = fields.Selection(
@@ -67,6 +82,7 @@ class MrpProduction(models.Model):
             ("production", "5. Production"),
             ("qc", "6. Quality Check"),
             ("close", "7. Close"),
+            ("handover", "8. Hand Over to Store"),
             ("done", "Done"),
             ("cancel", "Cancelled"),
         ],
@@ -166,8 +182,53 @@ class MrpProduction(models.Model):
         for production in self:
             requests = production.fahm_material_request_ids.filtered(
                 lambda r: r.state not in ("cancel", "rejected"))
+            if requests.filtered(lambda r: r.state == "issued"):
+                # once a first issue has happened, production can run; top-up requests
+                # for additional quantities do not send the order back to step 2
+                production.fahm_material_state = "issued"
+                continue
             latest = requests.sorted(lambda r: (r.date, r.id), reverse=True)[:1]
             production.fahm_material_state = latest.state if latest else "none"
+
+    def _fahm_material_shortfalls(self):
+        """(move, missing qty in move UoM) for components not yet available on the floor."""
+        self.ensure_one()
+        result = []
+        floor = self.location_src_id
+        MoveLine = self.env["stock.move.line"]
+        for move in self.move_raw_ids.filtered(lambda m: m.state not in ("done", "cancel")):
+            product = move.product_id
+            # what this order needs: the planned quantity, or more if more is being produced
+            needed = max(move.product_uom_qty, move.should_consume_qty)
+            # what is physically on the floor for this order: stock there minus what
+            # other open orders have reserved
+            on_hand = product.with_context(location=floor.id).qty_available
+            reserved_by_others = sum(MoveLine.search([
+                ("location_id", "child_of", floor.id),
+                ("product_id", "=", product.id),
+                ("state", "not in", ("done", "cancel")),
+                ("move_id.raw_material_production_id", "not in", [False, self.id]),
+            ]).mapped("quantity_product_uom"))
+            available = product.uom_id._compute_quantity(
+                max(on_hand - reserved_by_others, 0.0), move.product_uom)
+            missing = needed - available
+            if move.product_uom.compare(missing, 0) > 0:
+                result.append((move, move.product_uom.round(missing)))
+        return result
+
+    @api.depends("state", "fahm_material_state", "qty_producing", "move_raw_ids.quantity",
+                 "move_raw_ids.product_uom_qty", "fahm_material_request_ids.state")
+    def _compute_fahm_materials_short(self):
+        for production in self:
+            open_topup = production.fahm_material_request_ids.filtered(
+                lambda r: r.state in ("draft", "submitted", "approved", "issuing"))
+            production.fahm_materials_short = bool(
+                production.state in ("confirmed", "progress", "to_close")
+                and production.fahm_material_state == "issued"
+                and not open_topup
+                and production._fahm_is_water_order()
+                and production._fahm_material_shortfalls()
+            )
 
     @api.depends("fahm_material_request_ids")
     def _compute_fahm_material_request_count(self):
@@ -175,7 +236,7 @@ class MrpProduction(models.Model):
             production.fahm_material_request_count = len(production.fahm_material_request_ids)
 
     @api.depends("state", "fahm_material_state", "fahm_stage_line_ids.state",
-                 "fahm_qc_state", "product_id.fahm_water_type")
+                 "fahm_qc_state", "product_id.fahm_water_type", "fahm_handover_state")
     def _compute_fahm_step(self):
         for production in self:
             if production.state == "draft":
@@ -183,7 +244,8 @@ class MrpProduction(models.Model):
             elif production.state == "cancel":
                 step = "cancel"
             elif production.state == "done":
-                step = "done"
+                step = "done" if production.fahm_handover_state in ("received", "none_needed") \
+                    or not production._fahm_is_water_order() else "handover"
             elif not production._fahm_is_water_order():
                 step = False
             elif production.fahm_material_state in ("none", "draft"):
@@ -202,26 +264,36 @@ class MrpProduction(models.Model):
             production.fahm_step = step
 
     def action_fahm_request_materials(self):
+        """Request the components still missing on the production floor. The first request
+        asks for everything; later ones (e.g. after producing more than planned) only for
+        the shortfall."""
         self.ensure_one()
-        if self.state not in ("confirmed", "progress"):
+        if self.state not in ("confirmed", "progress", "to_close"):
             raise UserError(self.env._("Confirm the manufacturing order before requesting materials."))
         open_request = self.fahm_material_request_ids.filtered(
             lambda r: r.state in ("draft", "submitted", "approved", "issuing"))[:1]
-        request = open_request or self.env["fahm.material.request"].create({
-            "production_id": self.id,
-            "company_id": self.company_id.id,
-            "line_ids": [
-                fields.Command.create({
-                    "product_id": move.product_id.id,
-                    "uom_id": move.product_uom.id,
-                    "qty_required": move.product_uom_qty,
-                    "qty_requested": move.product_uom_qty,
-                    "sequence": index,
-                })
-                for index, move in enumerate(
-                    self.move_raw_ids.filtered(lambda m: m.state not in ("done", "cancel")), start=1)
-            ],
-        })
+        if not open_request:
+            shortfalls = self._fahm_material_shortfalls()
+            if not shortfalls:
+                raise UserError(self.env._(
+                    "All components of %s are already available on the production floor.", self.name))
+            open_request = self.env["fahm.material.request"].create({
+                "production_id": self.id,
+                "company_id": self.company_id.id,
+                "note": self.env._("Additional materials: the order needs more than was issued.")
+                if self.fahm_material_state == "issued" else False,
+                "line_ids": [
+                    fields.Command.create({
+                        "product_id": move.product_id.id,
+                        "uom_id": move.product_uom.id,
+                        "qty_required": max(move.product_uom_qty, move.should_consume_qty),
+                        "qty_requested": missing,
+                        "sequence": index,
+                    })
+                    for index, (move, missing) in enumerate(shortfalls, start=1)
+                ],
+            })
+        request = open_request
         return {
             "type": "ir.actions.act_window",
             "res_model": "fahm.material.request",
@@ -229,6 +301,54 @@ class MrpProduction(models.Model):
             "view_mode": "form",
             "target": "current",
         }
+
+    # ------------------------------------------------------------------
+    # Finished goods: staging -> handover to the store
+    # ------------------------------------------------------------------
+    @api.depends("state", "location_dest_id", "fahm_handover_ids.state", "product_id.fahm_water_type")
+    def _compute_fahm_handover_state(self):
+        for production in self:
+            handovers = production.fahm_handover_ids.filtered(lambda h: h.state != "cancel")
+            staging = production.picking_type_id.warehouse_id.fahm_fg_location_id
+            if production.state != "done" or not production._fahm_is_water_order() \
+                    or not staging or production.location_dest_id != staging:
+                production.fahm_handover_state = "none_needed"
+            elif handovers.filtered(lambda h: h.state in ("draft", "submitted")):
+                production.fahm_handover_state = "submitted"
+            elif handovers.filtered(lambda h: h.state == "received"):
+                production.fahm_handover_state = "received"
+            else:
+                production.fahm_handover_state = "to_hand_over"
+
+    @api.depends("fahm_handover_ids")
+    def _compute_fahm_handover_count(self):
+        for production in self:
+            production.fahm_handover_count = len(production.fahm_handover_ids)
+
+    def action_fahm_handover(self):
+        """Create the finished goods handover (staging -> store) for a done order."""
+        self.ensure_one()
+        if self.state != "done":
+            raise UserError(self.env._("Finish the production order before handing over the goods."))
+        open_handover = self.fahm_handover_ids.filtered(lambda h: h.state in ("draft", "submitted"))[:1]
+        handover = open_handover or self.env["fahm.fg.handover"]._create_from_production(self)
+        return {
+            "type": "ir.actions.act_window",
+            "res_model": "fahm.fg.handover",
+            "res_id": handover.id,
+            "view_mode": "form",
+            "target": "current",
+        }
+
+    def action_fahm_view_handovers(self):
+        self.ensure_one()
+        action = self.env["ir.actions.act_window"]._for_xml_id(
+            "fahm_water_manufacturing.action_fahm_fg_handover")
+        action["domain"] = [("production_id", "=", self.id)]
+        if self.fahm_handover_count == 1:
+            action["views"] = [(False, "form")]
+            action["res_id"] = self.fahm_handover_ids.id
+        return action
 
     def action_fahm_view_material_requests(self):
         self.ensure_one()

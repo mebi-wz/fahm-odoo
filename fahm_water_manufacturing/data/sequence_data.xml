@@ -21,4 +21,11 @@
         <field name="padding">5</field>
         <field name="company_id" eval="False"/>
     </record>
+    <record id="seq_fahm_fg_handover" model="ir.sequence">
+        <field name="name">Finished Goods Handover</field>
+        <field name="code">fahm.fg.handover</field>
+        <field name="prefix">WFH/%(year)s/</field>
+        <field name="padding">5</field>
+        <field name="company_id" eval="False"/>
+    </record>
 </odoo>
